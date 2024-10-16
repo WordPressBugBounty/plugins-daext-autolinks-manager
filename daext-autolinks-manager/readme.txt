@@ -3,14 +3,12 @@ Contributors: DAEXT
 Tags: automatic linking, automatic links, SEO auto linker, link building, internal links
 Donate link: https://daext.com
 Requires at least: 4.5
-Tested up to: 6.5.4
+Tested up to: 6.6.2
 Requires PHP: 5.3
 Stable tag: 1.10.08
 License: GPLv3
 
-Applying autolinks in your website is a smart strategy to generate more visits on your pages, sell more products, earn money with a referral system or to improve your SEO.
-
-The Autolinks Manager plugin, with its advanced autolinks system and a great number of options, gives you the ability to apply this strategy at its maximum level.
+Automate your affiliate links, increase product page visits, link glossary keywords, and more with this advanced SEO auto-linker plugin.
 
 == Description ==
 Applying autolinks in your website is a smart strategy to generate more visits on your pages, sell more products, earn money with a referral system or to improve your SEO.
