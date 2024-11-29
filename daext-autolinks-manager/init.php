@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Autolinks Manager
  * Description: Generates automatic links for your WordPress website. (Lite Version)
- * Version: 1.10.08
+ * Version: 1.10.09
  * Author: DAEXT
  * Author URI: https://daext.com
  * Text Domain: daext-autolinks-manager
@@ -87,3 +87,14 @@ if ( is_admin() ) {
 	Daextam_Admin::ac_initialize_options();
 
 }
+
+/**
+ * Load the plugin text domain for translation.
+ *
+ * @return void
+ */
+function daextam_load_plugin_textdomain() {
+	load_plugin_textdomain( 'daext-autolinks-manager', false, 'daext-autolinks-manager/lang/' );
+}
+
+add_action( 'init', 'daextam_load_plugin_textdomain' );
