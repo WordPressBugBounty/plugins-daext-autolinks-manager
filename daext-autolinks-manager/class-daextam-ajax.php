@@ -95,7 +95,7 @@ class Daextam_Ajax {
 
 		// Check the referer.
 		if ( ! check_ajax_referer( 'daextam', 'security', false ) ) {
-			esc_html_e( 'Invalid AJAX Request', 'deextamp' );
+			esc_html_e( 'Invalid AJAX Request', 'daext-autolinks-manager' );
 			die();
 		}
 

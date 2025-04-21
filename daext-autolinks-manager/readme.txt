@@ -3,9 +3,9 @@ Contributors: DAEXT
 Tags: automatic linking, automatic links, SEO auto linker, link building, internal links
 Donate link: https://daext.com
 Requires at least: 4.5
-Tested up to: 6.7.1
+Tested up to: 6.8
 Requires PHP: 5.3
-Stable tag: 1.10.09
+Stable tag: 1.10.10
 License: GPLv3
 
 Automate your affiliate links, increase product page visits, link glossary keywords, and more with this advanced SEO auto-linker plugin.
@@ -129,6 +129,13 @@ With this procedure you will be able to perform a **Single Site Activation** in 
 3. Click on the **Activate** button (just below the name of the plugin)
 
 == Changelog ==
+
+= 1.10.10 =
+
+*April 21, 2025*
+
+* Fixed PHP notice caused by early use of translation functions.
+* Fixed JavaScript deprecation notices for back-end functionality.
 
 = 1.10.09 =
 

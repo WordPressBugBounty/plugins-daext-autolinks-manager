@@ -183,7 +183,7 @@ class Daextam_Pagination {
 			echo '<div class="daextam-crud-table-controls__pagination-paging-text">' .
 				esc_html( $this->current_page ) .
 				'&nbsp' .
-				esc_html__( 'of' ) .
+				esc_html__( 'of', 'daext-autolinks-manager' ) .
 				'&nbsp' .
 				esc_html( $last_page ) .
 				'</div>';

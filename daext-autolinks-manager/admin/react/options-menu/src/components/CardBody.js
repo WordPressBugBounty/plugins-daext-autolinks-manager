@@ -50,6 +50,8 @@ const CardBody = (props) => {
                             onChange={(value) => props.handleChanges(value, option.name)}
                         name={option.name}
                             help={option.help}
+                            __next40pxDefaultSize={true}
+                            __nextHasNoMarginBottom={ true }
                         />
                       </div>
                       <div className={'option-container-right'}>
@@ -149,6 +151,7 @@ const CardBody = (props) => {
                             onChange={(value) => props.handleToggleChanges(value, option.name)}
                             help={option.help}
                             name={option.name}
+                            __nextHasNoMarginBottom={ true }
                         />
                       </div>
                       <div className={'option-container-right'}>
@@ -177,6 +180,8 @@ const CardBody = (props) => {
                             initialPosition={Number(props.formData[option.name])}
                             help={option.help}
                             trackColor={'#8D1E77'}
+                            __next40pxDefaultSize={ true }
+                            __nextHasNoMarginBottom={ true }
                         />
                       </div>
                       <div className={'option-container-right'}>
