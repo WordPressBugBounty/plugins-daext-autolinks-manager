@@ -2,7 +2,7 @@ import './editor.css';
 
 const {__} = wp.i18n;
 const {registerPlugin} = wp.plugins;
-const {PluginSidebar} = wp.editPost;
+const {PluginSidebar} = wp.editor;
 const {SelectControl} = wp.components;
 const {withSelect, withDispatch} = wp.data;
 const {Component} = wp.element;
@@ -43,7 +43,8 @@ class Daext_Autolinks_Manager_Pro extends Component {
     const MetaBlockField = function(props) {
       return (
           <SelectControl
-              label={__('Enable Autolinks', 'daext-autolinks-manager')}
+              help={__('Automatically add links based on the configured keywords.', 'daext-autolinks-manager')}
+              label={__('Enable', 'daext-autolinks-manager')}
               value={props.metaFieldValue}
               options={[
                 {value: '0', label: __('No', 'daext-autolinks-manager')},
@@ -52,6 +53,8 @@ class Daext_Autolinks_Manager_Pro extends Component {
               onChange={function(content) {
                 props.setMetaFieldValue(content);
               }}
+              __next40pxDefaultSize={true}
+              __nextHasNoMarginBottom={true}
           >
           </SelectControl>
       );
@@ -96,7 +99,7 @@ class Daext_Autolinks_Manager_Pro extends Component {
         <PluginSidebar
             name='daext-autolinks-manager-sidebar'
             icon={icon}
-            title={__('Autolinks Manager', 'daext-autolinks-manager')}
+            title={__('Automatic Links', 'daext-autolinks-manager')}
         >
           <div
               className='daext-autolinks-manager-sidebar-content'

@@ -335,23 +335,18 @@ class Daextam_Admin {
 		$meta_box_post_types_a = $this->shared->get_post_types_with_ui();
 		if ( in_array( $screen->id, $meta_box_post_types_a, true ) ) {
 
-			// Post Editor.
-			wp_enqueue_style(
-				$this->shared->get( 'slug' ) . '-meta-box',
-				$this->shared->get( 'url' ) . 'admin/assets/css/post-editor.css',
-				array(),
-				$this->shared->get( 'ver' )
-			);
+			// Ensure we are in the classic editor, not the block editor.
+			if ( ! method_exists( $screen, 'is_block_editor' ) || ! $screen->is_block_editor() ) {
 
-			// Select2.
-			wp_enqueue_style(
-				$this->shared->get( 'slug' ) . '-select2',
-				$this->shared->get( 'url' ) . 'admin/assets/inc/select2/css/select2.min.css',
-				array(),
-				$this->shared->get( 'ver' )
-			);
+				// Post Editor.
+				wp_enqueue_style(
+						$this->shared->get( 'slug' ) . '-meta-box',
+						$this->shared->get( 'url' ) . 'admin/assets/css/post-editor.css',
+						array(),
+						$this->shared->get( 'ver' )
+				);
 
-			wp_enqueue_style( $this->shared->get( 'slug' ) . '-select2-custom', $this->shared->get( 'url' ) . 'admin/assets/css/select2-custom.css', array(), $this->shared->get( 'ver' ) );
+			}
 
 		}
 	}
@@ -489,28 +484,6 @@ class Daextam_Admin {
 
 		}
 
-		$meta_box_post_types_a = $this->shared->get_post_types_with_ui();
-		if ( in_array( $screen->id, $meta_box_post_types_a, true ) ) {
-
-			wp_enqueue_script(
-				$this->shared->get( 'slug' ) . '-select2',
-				$this->shared->get( 'url' ) . 'admin/assets/inc/select2/js/select2.min.js',
-				array( 'jquery' ),
-				$this->shared->get( 'ver' ),
-				true
-			);
-
-			wp_enqueue_script(
-				$this->shared->get( 'slug' ) . '-post-editor',
-				$this->shared->get( 'url' ) . 'admin/assets/js/post-editor.js',
-				array( 'jquery', $this->shared->get( 'slug' ) . '-select2' ),
-				$this->shared->get( 'ver' ),
-				true
-			);
-
-			wp_localize_script( $this->shared->get( 'slug' ) . '-post-editor', 'objectL10n', $wp_localize_script_data );
-
-		}
 	}
 
 	/**
@@ -994,11 +967,11 @@ class Daextam_Admin {
 
 			add_meta_box(
 				'daextam-autolinks-manager',
-				esc_html__( 'Autolinks Manager', 'daext-autolinks-manager' ),
+				esc_html__( 'Automatic Links', 'daext-autolinks-manager' ),
 				array( $this, 'autolinks_manager_meta_box_callback' ),
 				null,
-				'normal',
-				'high',
+				'side',
+				'default',
 				/**
 				 * Reference: https://make.wordpress.org/core/2018/11/07/meta-box-compatibility-flags/
 				 */
@@ -1039,21 +1012,20 @@ class Daextam_Admin {
 
 		?>
 
-		<table class="form-table table-autolinks-manager">
-			<tbody>
-
-			<tr>
-				<th scope="row"><label><?php esc_html_e( 'Enable Autolinks', 'daext-autolinks-manager' ); ?></label></th>
-				<td>
-					<select id="daextam-enable-autolinks" name="daextam_enable_autolinks">
-						<option <?php selected( intval( $enable_autolinks, 10 ), 0 ); ?> value="0"><?php esc_html_e( 'No', 'daext-autolinks-manager' ); ?></option>
-						<option <?php selected( intval( $enable_autolinks, 10 ), 1 ); ?> value="1"><?php esc_html_e( 'Yes', 'daext-autolinks-manager' ); ?></option>
-					</select>
-				</td>
-			</tr>
-
-			</tbody>
-		</table>
+		<div class="daextam-field">
+			<div class="daextam-label">
+				<label for="daextam-enable-autolinks"><?php esc_html_e( 'Enable', 'daext-autolinks-manager' ); ?></label>
+			</div>
+			<div class="daextam-input">
+				<select id="daextam-enable-autolinks" name="daextam_enable_autolinks">
+					<option <?php selected( intval( $enable_autolinks, 10 ), 0 ); ?> value="0"><?php esc_html_e( 'No', 'daext-autolinks-manager' ); ?></option>
+					<option <?php selected( intval( $enable_autolinks, 10 ), 1 ); ?> value="1"><?php esc_html_e( 'Yes', 'daext-autolinks-manager' ); ?></option>
+				</select>
+				<p class="daextam-description">
+					<?php esc_html_e( 'Automatically add links based on the configured keywords.', 'daext-autolinks-manager' ); ?>
+				</p>
+			</div>
+		</div>
 
 		<?php
 

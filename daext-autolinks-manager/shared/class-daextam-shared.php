@@ -127,7 +127,7 @@ class Daextam_Shared {
 	private function __construct() {
 
 		$this->data['slug'] = 'daextam';
-		$this->data['ver']  = '1.10.10';
+		$this->data['ver']  = '1.10.11';
 		$this->data['dir']  = substr( plugin_dir_path( __FILE__ ), 0, -7 );
 		$this->data['url']  = substr( plugin_dir_url( __FILE__ ), 0, -7 );
 
@@ -2347,7 +2347,7 @@ class Daextam_Shared {
 								'label'   => __( 'Enable Autolinks', 'daext-autolinks-manager' ),
 								'type'    => 'toggle',
 								'tooltip' => __(
-									'This option determines the default status of the "Enable Autolinks" option available in the "Autolinks Manager" meta box.',
+									'This option determines the default status of the "Enable" option in the "Automatic Links" block editor sidebar and meta box.',
 									'daext-autolinks-manager'
 								),
 								'help'    => __( 'Enable the application of the automatic links.', 'daext-autolinks-manager' ),
@@ -4081,26 +4081,17 @@ class Daextam_Shared {
 		 * query and the query is executed.
 		 */
 		$query_start = "INSERT INTO {$wpdb->prefix}daextam_statistic (post_id, post_title, post_permalink, post_edit_link, post_type, post_date, content_length, auto_links) VALUES ";
-		$query_end   = '';
 
-		foreach ( $query_groups as $key => $query_values ) {
+		foreach ( $query_groups as $query_values ) {
 
-			$query_body = '';
-
-			foreach ( $query_values as $single_query_value ) {
-
-				$query_body .= $single_query_value . ',';
-
-			}
+			$query_body = implode( ',', $query_values );
 
 			// Save data into the archive db table.
 
 			// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared
 			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $post_types_query is already sanitized.
 			// phpcs:disable WordPress.DB.DirectDatabaseQuery
-			$wpdb->query(
-				$query_start . substr( $query_body, 0, mb_strlen( $query_body ) - 1 ) . $query_end
-			);
+			$wpdb->query( $query_start . $query_body );
 			// phpcs:enable
 
 		}

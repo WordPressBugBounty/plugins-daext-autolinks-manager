@@ -3,9 +3,9 @@ Contributors: DAEXT
 Tags: automatic linking, automatic links, SEO auto linker, link building, internal links
 Donate link: https://daext.com
 Requires at least: 4.5
-Tested up to: 6.8
+Tested up to: 6.9
 Requires PHP: 5.3
-Stable tag: 1.10.10
+Stable tag: 1.10.11
 License: GPLv3
 
 Automate your affiliate links, increase product page visits, link glossary keywords, and more with this advanced SEO auto-linker plugin.
@@ -97,7 +97,7 @@ This plugin can be used on a WordPress Network, and supports both a Network Acti
 #### Credits
 This plugin makes use of the following resources:
 
-* Chosen licensed under the MIT License
+* [Select2](https://select2.org/) licensed under the MIT License
 
 For each library you can find the actual copy of the license inside the folder used to store the library files.
 
@@ -129,6 +129,16 @@ With this procedure you will be able to perform a **Single Site Activation** in 
 3. Click on the **Activate** button (just below the name of the plugin)
 
 == Changelog ==
+
+= 1.10.11 =
+
+*March 13, 2026*
+
+* Fixed JavaScript notices in the block editor.
+* Improved the style of the block editor sidebar tool.
+* Improved the style of the classic editor meta box and moved it to the sidebar.
+* Select2 is no longer used in the classic editor meta box.
+* Improved statistics retrieval queries to prevent SQL errors.
 
 = 1.10.10 =
 
