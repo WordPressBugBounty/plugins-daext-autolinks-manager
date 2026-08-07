@@ -7,5 +7,5 @@
  * compiling as the entry point.
  */
 
-//Import the "daextam-" sidebar implemented with the Sidebar API
-import './daext-autolinks-manager/index.js';
+import './automatic-links-options/index.js';
+import './interlinks-optimization/index';

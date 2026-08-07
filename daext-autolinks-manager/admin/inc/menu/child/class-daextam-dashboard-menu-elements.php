@@ -21,10 +21,11 @@ class Daextam_Dashboard_Menu_Elements extends Daextam_Menu_Elements {
 
 		parent::__construct( $shared, $page_query_param, $config );
 
-		$this->menu_slug      = 'dashboard';
-		$this->slug_plural    = 'dashboard';
-		$this->label_singular = __( 'Dashboard', 'daext-autolinks-manager' );
-		$this->label_plural   = __( 'Dashboard', 'daext-autolinks-manager' );
+		$this->menu_slug          = 'dashboard';
+		$this->slug_plural        = 'dashboard';
+		$this->label_singular     = __('Dashboard', 'daext-autolinks-manager');
+		$this->label_plural       = __('Dashboard', 'daext-autolinks-manager');
+
 	}
 
 	/**
@@ -36,8 +37,24 @@ class Daextam_Dashboard_Menu_Elements extends Daextam_Menu_Elements {
 
 		?>
 
-		<div id="react-root"></div>
+		<div class="daextam-admin-body">
+
+			<?php
+
+			// Display the dismissible notices.
+			$this->shared->get_notices()->display_dismissible_notices();
+
+			// Display the license activation notice.
+			$this->shared->get_notices()->display_license_activation_notice();
+
+			?>
+
+			<div id="react-root"></div>
+
+		</div>
 
 		<?php
+
 	}
+
 }

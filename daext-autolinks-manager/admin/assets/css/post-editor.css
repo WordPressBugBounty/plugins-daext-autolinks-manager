@@ -47,3 +47,67 @@
 .daextam-description{
 	margin: 1em 0 6px;
 }
+
+/* Internal Links Settings Meta Box --------------------------------------------------------------------------------- */
+#daextam-meta-options .inside input {
+	border-radius: 2px;
+	margin: 0;
+	width: 100%;
+}
+
+.daextam-seo-power-label-wrapper{
+	margin-bottom: 0.5em;
+}
+
+.daextam-seo-power-label{
+	vertical-align: baseline;
+	font-weight: 600;
+}
+
+p.daextam-seo-power-description{
+	margin: 1em 0 6px;
+}
+
+/* Internal Links Optimization Meta Box ----------------------------------------------------------------------------- */
+
+#daextam-meta-optimization .inside {
+	margin: 0;
+	padding: 12px;
+}
+
+#daextam-meta-optimization p {
+	font-size: 13px;
+	line-height: 1.4em;
+	margin-top: 0;
+}
+
+#daextam-meta-optimization p:not(:last-of-type) {
+	margin-bottom: 16px;
+}
+
+/* Internal Links Optimization Meta Box ----------------------------------------------------------------------------- */
+
+#daextam-meta-optimization .inside{
+	margin: 0;
+	padding-bottom: 16px;
+}
+
+#daextam-meta-optimization .form-table{
+	margin-top: 0;
+	padding-top: 16px;
+}
+
+#daextam-meta-optimization td{
+	padding-bottom: 0;
+	padding-top: 16px;
+}
+
+#daextam-meta-optimization p{
+	font-size: 13px;
+	line-height: 1.4em;
+	margin-top: 0;
+}
+
+#daextam-meta-optimization p:not(:last-of-type){
+	margin-bottom: 16px;
+}

@@ -1,12 +1,12 @@
 <?php
 /**
- * Class used to implement the back-end functionalities of the "Term Groups" menu.
+ * Class used to implement the back-end functionalities of the "Target Groups" menu.
  *
  * @package daext-autolinks-manager
  */
 
 /**
- * Class used to implement the back-end functionalities of the "Term Groups" menu.
+ * Class used to implement the back-end functionalities of the "Target Groups" menu.
  */
 class Daextam_Term_Groups_Menu_Elements extends Daextam_Menu_Elements {
 
@@ -23,19 +23,20 @@ class Daextam_Term_Groups_Menu_Elements extends Daextam_Menu_Elements {
 
 		$this->menu_slug          = 'term-groups';
 		$this->slug_plural        = 'term-groups';
-		$this->label_singular     = __( 'Term Group', 'daext-autolinks-manager' );
-		$this->label_plural       = __( 'Term Groups', 'daext-autolinks-manager' );
+		$this->label_singular     = __('Target Group', 'daext-autolinks-manager');
+		$this->label_plural       = __('Target Groups', 'daext-autolinks-manager');
 		$this->primary_key        = 'term_group_id';
 		$this->db_table           = 'term_group';
 		$this->list_table_columns = array(
 			array(
 				'db_field' => 'name',
-				'label'    => __( 'Name', 'daext-autolinks-manager' ),
+				'label'    => __('Name', 'daext-autolinks-manager'),
 			),
 		);
 		$this->searchable_fields  = array(
 			'name',
 		);
+
 	}
 
 	/**
@@ -56,6 +57,8 @@ class Daextam_Term_Groups_Menu_Elements extends Daextam_Menu_Elements {
 			check_admin_referer( 'daextam_create_update_' . $this->menu_slug, 'daextam_create_update_' . $this->menu_slug . '_nonce' );
 
 		}
+
+		$supported_terms = intval( get_option( $this->shared->get( 'slug' ) . '_supported_terms' ), 10 );
 
 		?>
 
@@ -118,7 +121,7 @@ class Daextam_Term_Groups_Menu_Elements extends Daextam_Menu_Elements {
 
 			// validation on "name".
 			if ( mb_strlen( trim( $data['name'] ) ) === 0 || mb_strlen( trim( $data['name'] ) ) > 100 ) {
-				$this->shared->save_dismissible_notice(
+				$this->shared->get_notices()->save_dismissible_notice(
 					__( 'Please enter a valid value in the "Name" field.', 'daext-autolinks-manager' ),
 					'error'
 				);
@@ -133,7 +136,7 @@ class Daextam_Term_Groups_Menu_Elements extends Daextam_Menu_Elements {
 				}
 			}
 			if ( ! $one_term_is_set ) {
-				$this->shared->save_dismissible_notice(
+				$this->shared->get_notices()->save_dismissible_notice(
 					__( 'Please specify at least one term.', 'daext-autolinks-manager' ),
 					'error'
 				);
@@ -146,35 +149,31 @@ class Daextam_Term_Groups_Menu_Elements extends Daextam_Menu_Elements {
 
 			// Update.
 
-			// Prepare the partial query.
-			$query_part = '';
+			// Build data array for safe $wpdb->update().
+			$record  = array( 'name' => $data['name'] );
+			$formats = array( '%s' );
 			for ( $i = 1; $i <= 50; $i++ ) {
-
-				$query_part .= $wpdb->prepare( 'post_type_' . intval( $i, 10 ) . ' = %s,', $data[ 'post_type_' . $i ] );
-				$query_part .= $wpdb->prepare( 'taxonomy_' . intval( $i, 10 ) . ' = %s,', $data[ 'taxonomy_' . $i ] );
-				$query_part .= $wpdb->prepare( 'term_' . intval( $i, 10 ) . ' = %s', $data[ 'term_' . $i ] );
-
-				if ( 50 !== $i ) {
-					$query_part .= ',';
-				}
+				$record[ 'post_type_' . $i ] = $data[ 'post_type_' . $i ];
+				$formats[]                   = '%s';
+				$record[ 'taxonomy_' . $i ]  = $data[ 'taxonomy_' . $i ];
+				$formats[]                   = '%s';
+				$record[ 'term_' . $i ]      = $data[ 'term_' . $i ];
+				$formats[]                   = '%d';
 			}
 
-			// phpcs:disable WordPress.DB.DirectDatabaseQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $query_part is already prepared.
-			$query_result = $wpdb->query(
-				$wpdb->prepare(
-					"UPDATE {$wpdb->prefix}daextam_term_group SET
-                name = %s,
-                $query_part
-                WHERE term_group_id = %d",
-					$data['name'],
-					$data['update_id']
-				)
+			// phpcs:disable WordPress.DB.DirectDatabaseQuery
+			$query_result = $wpdb->update(
+				$wpdb->prefix . 'daextam_term_group',
+				$record,
+				array( 'term_group_id' => $data['update_id'] ),
+				$formats,
+				array( '%d' )
 			);
 			// phpcs:enable
 
 			if ( false !== $query_result ) {
-				$this->shared->save_dismissible_notice(
-					__( 'The term group has been successfully updated.', 'daext-autolinks-manager' ),
+				$this->shared->get_notices()->save_dismissible_notice(
+					__( 'The target group has been successfully updated.', 'daext-autolinks-manager' ),
 					'updated'
 				);
 			}
@@ -182,33 +181,29 @@ class Daextam_Term_Groups_Menu_Elements extends Daextam_Menu_Elements {
 
 				// Add.
 
-				// Prepare the partial query.
-				$query_part = '';
+			// Build data array for safe $wpdb->insert().
+			$record  = array( 'name' => $data['name'] );
+			$formats = array( '%s' );
 			for ( $i = 1; $i <= 50; $i++ ) {
-
-				$query_part .= $wpdb->prepare( 'post_type_' . intval( $i, 10 ) . ' = %s,', $data[ 'post_type_' . $i ] );
-				$query_part .= $wpdb->prepare( 'taxonomy_' . intval( $i, 10 ) . ' = %s,', $data[ 'taxonomy_' . $i ] );
-				$query_part .= $wpdb->prepare( 'term_' . intval( $i, 10 ) . ' = %s', $data[ 'term_' . $i ] );
-
-				if ( 50 !== $i ) {
-					$query_part .= ',';
-				}
+				$record[ 'post_type_' . $i ] = $data[ 'post_type_' . $i ];
+				$formats[]                   = '%s';
+				$record[ 'taxonomy_' . $i ]  = $data[ 'taxonomy_' . $i ];
+				$formats[]                   = '%s';
+				$record[ 'term_' . $i ]      = $data[ 'term_' . $i ];
+				$formats[]                   = '%d';
 			}
 
-				// phpcs:disable WordPress.DB.DirectDatabaseQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $query_part is already prepared.
-				$query_result = $wpdb->query(
-					$wpdb->prepare(
-						"INSERT INTO {$wpdb->prefix}daextam_term_group SET
-		            name = %s,
-		            $query_part",
-						$data['name']
-					)
-				);
-				// phpcs:enable
+			// phpcs:disable WordPress.DB.DirectDatabaseQuery
+			$query_result = $wpdb->insert(
+				$wpdb->prefix . 'daextam_term_group',
+				$record,
+				$formats
+			);
+			// phpcs:enable
 
 			if ( false !== $query_result ) {
-				$this->shared->save_dismissible_notice(
-					__( 'The term group has been successfully added.', 'daext-autolinks-manager' ),
+				$this->shared->get_notices()->save_dismissible_notice(
+					__( 'The target group has been successfully added.', 'daext-autolinks-manager' ),
 					'updated'
 				);
 			}
@@ -251,7 +246,7 @@ class Daextam_Term_Groups_Menu_Elements extends Daextam_Menu_Elements {
 						'type'        => 'text',
 						'name'        => 'name',
 						'label'       => __( 'Name', 'daext-autolinks-manager' ),
-						'description' => __( 'The name of the term group.', 'daext-autolinks-manager' ),
+						'description' => __( 'The name of the target group.', 'daext-autolinks-manager' ),
 						'value'       => isset( $item_obj ) ? $item_obj['name'] : null,
 						'maxlength'   => 100,
 						'required'    => true,
@@ -337,9 +332,9 @@ class Daextam_Term_Groups_Menu_Elements extends Daextam_Menu_Elements {
 	 */
 	public function item_is_deletable( $item_id ) {
 
-		if ( $this->shared->term_group_is_used( $item_id ) ) {
+		if ( $this->shared->get_term_helpers()->term_group_is_used( $item_id ) ) {
 			$is_deletable               = false;
-			$dismissible_notice_message = __( "This term group is associated with one or more autolinks and can't be deleted.", 'daext-autolinks-manager' );
+			$dismissible_notice_message = __( "This target group is associated with one or more auto link rules and can't be deleted.", 'daext-autolinks-manager' );
 		} else {
 			$is_deletable               = true;
 			$dismissible_notice_message = null;

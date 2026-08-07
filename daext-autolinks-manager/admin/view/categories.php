@@ -5,6 +5,11 @@
  * @package daext-autolinks-manager
  */
 
-$this->menu_elements->capability = 'manage_options';
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+$this->menu_elements->capability = 'edit_others_posts';
 $this->menu_elements->context    = 'crud';
 $this->menu_elements->display_menu_content();

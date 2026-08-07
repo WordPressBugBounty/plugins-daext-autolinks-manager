@@ -324,19 +324,19 @@ class Daextam_Pagination {
 
 			if ( '&#139' === $text ) {
 				echo '<a href="javascript: void(0)" class="disabled">';
-				$this->shared->echo_icon_svg( 'chevron-left' );
+				$this->shared->get_admin_helper()->echo_icon_svg( 'chevron-left' );
 				echo '</a>';
 			} elseif ( '&#171' === $text ) {
 				echo '<a href="javascript: void(0)" class="disabled">';
-				$this->shared->echo_icon_svg( 'chevron-left-double' );
+				$this->shared->get_admin_helper()->echo_icon_svg( 'chevron-left-double' );
 				echo '</a>';
 			} elseif ( '&#155' === $text ) {
 				echo '<a href="javascript: void(0)" class="disabled">';
-				$this->shared->echo_icon_svg( 'chevron-right' );
+				$this->shared->get_admin_helper()->echo_icon_svg( 'chevron-right' );
 				echo '</a>';
 			} elseif ( '&#187' === $text ) {
 				echo '<a href="javascript: void(0)" class="disabled">';
-				$this->shared->echo_icon_svg( 'chevron-right-double' );
+				$this->shared->get_admin_helper()->echo_icon_svg( 'chevron-right-double' );
 				echo '</a>';
 			} else {
 				echo '<a href="javascript: void(0)" class="disabled">' . esc_html( $text ) . '</a>';
@@ -347,19 +347,19 @@ class Daextam_Pagination {
 
 			if ( '&#139' === $text ) {
 				echo '<a href="' . esc_url( $url ) . '">';
-				$this->shared->echo_icon_svg( 'chevron-left' );
+				$this->shared->get_admin_helper()->echo_icon_svg( 'chevron-left' );
 				echo '</a>';
 			} elseif ( '&#171' === $text ) {
 				echo '<a href="' . esc_url( $url ) . '">';
-				$this->shared->echo_icon_svg( 'chevron-left-double' );
+				$this->shared->get_admin_helper()->echo_icon_svg( 'chevron-left-double' );
 				echo '</a>';
 			} elseif ( '&#155' === $text ) {
 				echo '<a href="' . esc_url( $url ) . '">';
-				$this->shared->echo_icon_svg( 'chevron-right' );
+				$this->shared->get_admin_helper()->echo_icon_svg( 'chevron-right' );
 				echo '</a>';
 			} elseif ( '&#187' === $text ) {
 				echo '<a href="' . esc_url( $url ) . '">';
-				$this->shared->echo_icon_svg( 'chevron-right-double' );
+				$this->shared->get_admin_helper()->echo_icon_svg( 'chevron-right-double' );
 				echo '</a>';
 			} else {
 				echo '<a href="' . esc_url( $url ) . '">' . esc_html( $text ) . '</a>';

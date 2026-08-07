@@ -1,5 +1,5 @@
 /**
- * This file is used to load taxonomies and terms dynamically in the menu term groups page.
+ * This file is used to load taxonomies and terms dynamically in the menu target groups page.
  *
  * @package daext-autolinks-manager
  */

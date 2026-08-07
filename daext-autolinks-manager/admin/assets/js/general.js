@@ -1,6 +1,6 @@
 /**
  * This file is used loaded in all WordPress back-end pages, and it's used to add the target="_blank" attribute to the
- * "Help & Support" link available as the last item in the Autolinks Manager admin menu.
+ * "Help & Support" link available as the last item in the Link Manager admin menu.
  *
  * @package daext-autolinks-manager
  */

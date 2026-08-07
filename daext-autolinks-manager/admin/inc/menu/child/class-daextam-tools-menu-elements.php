@@ -25,6 +25,7 @@ class Daextam_Tools_Menu_Elements extends Daextam_Menu_Elements {
 		$this->slug_plural    = 'tools';
 		$this->label_singular = __( 'Tool', 'daext-autolinks-manager' );
 		$this->label_plural   = __( 'Tools', 'daext-autolinks-manager' );
+
 	}
 
 	/**
@@ -37,6 +38,7 @@ class Daextam_Tools_Menu_Elements extends Daextam_Menu_Elements {
 	 * @return false|void
 	 */
 	public function process_form() {
+		$data_import_export = $this->shared->get_data_import_export();
 
 		// process the export button click. (export) ------------------------------------------------------------------.
 
@@ -57,7 +59,7 @@ class Daextam_Tools_Menu_Elements extends Daextam_Menu_Elements {
 			// Generate the header of the XML file.
 			header( 'Content-Encoding: UTF-8' );
 			header( 'Content-type: text/xml; charset=UTF-8' );
-			header( 'Content-Disposition: attachment; filename=autolinks-manager-' . time() . '.xml' );
+			header( 'Content-Disposition: attachment; filename=link-manager-' . time() . '.xml' );
 			header( 'Pragma: no-cache' );
 			header( 'Expires: 0' );
 
@@ -66,9 +68,9 @@ class Daextam_Tools_Menu_Elements extends Daextam_Menu_Elements {
 			echo '<root>';
 
 			// Generate the XML of the various db tables.
-			$this->shared->convert_db_table_to_xml( 'autolink', 'autolink_id' );
-			$this->shared->convert_db_table_to_xml( 'category', 'category_id' );
-			$this->shared->convert_db_table_to_xml( 'term_group', 'term_group_id' );
+			$data_import_export->convert_db_table_to_xml( 'autolink', 'autolink_id' );
+			$data_import_export->convert_db_table_to_xml( 'category', 'category_id' );
+			$data_import_export->convert_db_table_to_xml( 'term_group', 'term_group_id' );
 
 			// Generate the final part of the XML file.
 			echo '</root>';
@@ -92,7 +94,8 @@ class Daextam_Tools_Menu_Elements extends Daextam_Menu_Elements {
 			<?php
 
 			// Display the dismissible notices.
-			$this->shared->display_dismissible_notices();
+			$this->shared->get_notices()->display_dismissible_notices();
+
 
 			?>
 
@@ -106,7 +109,7 @@ class Daextam_Tools_Menu_Elements extends Daextam_Menu_Elements {
 
 						<div class="daextam-main-form__section-header">
 							<div class="daextam-main-form__section-header-title">
-								<?php $this->shared->echo_icon_svg( 'log-out-04' ); ?>
+								<?php $this->shared->get_admin_helper()->echo_icon_svg( 'log-out-04' ); ?>
 								<div class="daextam-main-form__section-header-title-text"><?php esc_html_e( 'Export', 'daext-autolinks-manager' ); ?></div>
 							</div>
 						</div>
@@ -118,17 +121,22 @@ class Daextam_Tools_Menu_Elements extends Daextam_Menu_Elements {
 							<p>
 								<?php
 								esc_html_e(
-									'Click the Export button to generate an XML file that includes autolinks, categories and term groups.',
+									'Click the Export button to generate an XML file that includes automatic link rules, categories and target groups.',
 									'daext-autolinks-manager'
 								);
 								?>
 							</p>
 							<p>
-								<?php esc_html_e( 'Note that you can import the resulting file in the Tools menu of the ', 'daext-autolinks-manager' ); ?>
-								<a href="https://daext.com/autolinks-manager/" target="_blank"><?php esc_html_e( 'Pro Version', 'daext-autolinks-manager' ); ?></a> <?php esc_html_e( 'to quickly transition between the two plugin editions.', 'daext-autolinks-manager' ); ?>
+								<?php
+								printf(
+									/* translators: %s: link to the Pro Version page */
+									esc_html__( 'Note that you can import the resulting file in the Tools menu of the %s to quickly transition between the two plugin editions.', 'daext-autolinks-manager' ),
+									'<a href="https://daext.com/link-manager/" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Pro Version', 'daext-autolinks-manager' ) . '</a>'
+								);
+								?>
 							</p>
 
-							<!-- the data sent through this form are handled by the export_xml_controller() method called with the WordPress init action -->
+							<!-- the data sent through this form are handled directly in process_form() -->
 							<form method="POST" action="admin.php?page=<?php echo esc_attr( $this->shared->get( 'slug' ) ); ?>-<?php echo esc_attr( $this->slug_plural ); ?>">
 
 								<div class="daext-widget-submit">
@@ -136,7 +144,7 @@ class Daextam_Tools_Menu_Elements extends Daextam_Menu_Elements {
 									<input name="daextam_export" class="daextam-btn daextam-btn-primary" type="submit"
 											value="<?php esc_attr_e( 'Export', 'daext-autolinks-manager' ); ?>"
 										<?php
-										if ( ! $this->shared->exportable_data_exists() ) {
+													if ( ! $this->shared->get_data_import_export()->exportable_data_exists() ) {
 											echo 'disabled="disabled"';
 										}
 										?>

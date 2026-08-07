@@ -1,12 +1,12 @@
 <?php
 /**
- * Class used to implement the back-end functionalities of the "Autolinks" menu.
+ * Class used to implement the back-end functionalities of the "Auto Link Rules" menu.
  *
  * @package daext-autolinks-manager
  */
 
 /**
- * Class used to implement the back-end functionalities of the "Autolinks" menu.
+ * Class used to implement the back-end functionalities of the "Auto Link Rules" menu.
  */
 class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 
@@ -23,8 +23,8 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 
 		$this->menu_slug          = 'autolink';
 		$this->slug_plural        = 'autolinks';
-		$this->label_singular     = __( 'Autolink', 'daext-autolinks-manager' );
-		$this->label_plural       = __( 'Autolinks', 'daext-autolinks-manager' );
+		$this->label_singular     = __( 'Rule', 'daext-autolinks-manager' );
+		$this->label_plural       = __( 'Rules', 'daext-autolinks-manager' );
 		$this->primary_key        = 'autolink_id';
 		$this->db_table           = 'autolink';
 		$this->list_table_columns = array(
@@ -35,7 +35,7 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 			array(
 				'db_field'                => 'category_id',
 				'label'                   => 'Category',
-				'prepare_displayed_value' => array( $shared, 'get_category_name' ),
+				'prepare_displayed_value' => array( $shared->get_term_helpers(), 'get_category_name' ),
 			),
 			array(
 				'db_field' => 'keyword',
@@ -85,7 +85,7 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 	public function process_form() {
 
 		if ( isset( $_POST['update_id'] ) ||
-			isset( $_POST['form_submitted'] ) ) {
+		     isset( $_POST['form_submitted'] ) ) {
 
 			// Nonce verification.
 			check_admin_referer( 'daextam_create_update_' . $this->menu_slug, 'daextam_create_update_' . $this->menu_slug . '_nonce' );
@@ -176,7 +176,7 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 
 			// Validation on "name".
 			if ( mb_strlen( trim( $data['name'] ) ) === 0 || mb_strlen( trim( $data['name'] ) ) > 100 ) {
-				$this->shared->save_dismissible_notice(
+				$this->shared->get_notices()->save_dismissible_notice(
 					__( 'Please enter a valid value in the "Name" field.', 'daext-autolinks-manager' ),
 					'error'
 				);
@@ -185,7 +185,7 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 
 			// Validation on "Keyword".
 			if ( 0 === strlen( trim( $data['keyword'] ) ) || strlen( $data['keyword'] ) > 255 ) {
-				$this->shared->save_dismissible_notice(
+				$this->shared->get_notices()->save_dismissible_notice(
 					__( 'Please enter a valid value in the "Keyword" field.', 'daext-autolinks-manager' ),
 					'error'
 				);
@@ -202,7 +202,7 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 			 * - [pb]812[/pb]
 			 */
 			if ( preg_match( '/^\d+$/', $data['keyword'] ) === 1 ) {
-				$this->shared->save_dismissible_notice(
+				$this->shared->get_notices()->save_dismissible_notice(
 					__( 'The specified keyword is not allowed.', 'daext-autolinks-manager' ),
 					'error'
 				);
@@ -215,7 +215,7 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 			 * protected block [pb], part of the start delimiter, the end delimited [/pb] or part of the end delimiter.
 			 */
 			if ( preg_match( '/^\[$|^\[p$|^\[pb$|^\[pb]$|^\[\/$|^\[\/p$|^\[\/pb$|^\[\/pb\]$|^\]$|^b\]$|^pb\]$|^\/pb\]$|^p$|^pb$|^pb\]$|^\/$|^\/p$|^\/pb$|^\/pb]$|^b$|^b\$/i', $data['keyword'] ) === 1 ) {
-				$this->shared->save_dismissible_notice(
+				$this->shared->get_notices()->save_dismissible_notice(
 					__( 'The specified keyword is not allowed.', 'daext-autolinks-manager' ),
 					'error'
 				);
@@ -228,7 +228,7 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 			 * part of the start delimiter, the end delimited [/al] or part of the end delimiter.
 			 */
 			if ( ! isset( $specified_keyword_not_allowed ) && preg_match( '/^\[$|^\[a$|^\[al$|^\[al]$|^\[\/$|^\[\/a$|^\[\/al$|^\[\/al\]$|^\]$|^l\]$|^al\]$|^\/al\]$|^a$|^al$|^al\]$|^\/$|^\/a$|^\/al$|^\/al]$|^l$|^l\$]/i', $data['keyword'] ) === 1 ) {
-				$this->shared->save_dismissible_notice(
+				$this->shared->get_notices()->save_dismissible_notice(
 					__( 'The specified keyword is not allowed.', 'daext-autolinks-manager' ),
 					'error'
 				);
@@ -237,7 +237,7 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 
 			// Validation on "URL".
 			if ( mb_strlen( trim( $data['url'] ) ) === 0 || mb_strlen( trim( $data['url'] ) ) > 2083 ) {
-				$this->shared->save_dismissible_notice(
+				$this->shared->get_notices()->save_dismissible_notice(
 					__( 'Please enter a valid value in the "URL" field.', 'daext-autolinks-manager' ),
 					'error'
 				);
@@ -246,7 +246,7 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 
 			// Validation on "Title".
 			if ( strlen( $data['title'] ) > 1024 ) {
-				$this->shared->save_dismissible_notice(
+				$this->shared->get_notices()->save_dismissible_notice(
 					__( 'Please enter a valid value in the "Title" field.', 'daext-autolinks-manager' ),
 					'error'
 				);
@@ -255,7 +255,7 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 
 			// validation on "keyword_before".
 			if ( mb_strlen( trim( $data['keyword_before'] ) ) > 255 ) {
-				$this->shared->save_dismissible_notice(
+				$this->shared->get_notices()->save_dismissible_notice(
 					__( 'Please enter a valid value in the "Keyword Before" field.', 'daext-autolinks-manager' ),
 					'error'
 				);
@@ -264,7 +264,7 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 
 			// Validation on "keyword_after".
 			if ( mb_strlen( trim( $data['keyword_after'] ) ) > 255 ) {
-				$this->shared->save_dismissible_notice(
+				$this->shared->get_notices()->save_dismissible_notice(
 					__( 'Please enter a valid value in the "Keyword After" field.', 'daext-autolinks-manager' ),
 					'error'
 				);
@@ -273,7 +273,7 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 
 			// Validation on "Max Number Autolinks".
 			if ( ! preg_match( $this->shared->regex_number_ten_digits, $data['limit'] ) || intval( $data['limit'], 10 ) < 1 || intval( $data['limit'], 10 ) > 1000000 ) {
-				$this->shared->save_dismissible_notice(
+				$this->shared->get_notices()->save_dismissible_notice(
 					__( 'Please enter a number from 1 to 1000000 in the "Limit" field.', 'daext-autolinks-manager' ),
 					'error'
 				);
@@ -282,7 +282,7 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 
 			// validation on "Priority".
 			if ( ! preg_match( $this->shared->regex_number_ten_digits, $data['priority'] ) || intval( $data['priority'], 10 ) > 100 ) {
-				$this->shared->save_dismissible_notice(
+				$this->shared->get_notices()->save_dismissible_notice(
 					__( 'Please enter a number from 0 to 100 in the "Priority" field.', 'daext-autolinks-manager' ),
 					'error'
 				);
@@ -340,14 +340,54 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 			);
 
 			if ( false !== $query_result ) {
-				$this->shared->save_dismissible_notice(
-					__( 'The automatic link has been successfully updated.', 'daext-autolinks-manager' ),
+				$this->shared->get_notices()->save_dismissible_notice(
+					__( 'The rule has been successfully updated.', 'daext-autolinks-manager' ),
 					'updated'
 				);
 			}
 		} elseif ( ! is_null( $data['form_submitted'] ) && ! isset( $invalid_data ) ) {
 
 			// Add record to database ------------------------------------------------------------------.
+
+			$test = $wpdb->prepare(
+				"INSERT INTO {$wpdb->prefix}daextam_autolink SET 
+                name = %s,
+                category_id = %d,
+                keyword = %s,
+                url = %s,
+                title = %s,
+                left_boundary = %d,
+                right_boundary = %d,
+                keyword_before = %s,
+                keyword_after = %s,
+                post_types = %s,
+                categories = %s,
+                tags = %s,
+                term_group_id = %d,
+                `limit` = %d,
+                case_sensitive_search = %d,
+                open_new_tab = %d,
+                use_nofollow = %d,
+                priority = %d",
+				$data['name'],
+				$data['category_id'],
+				$data['keyword'],
+				$data['url'],
+				$data['title'],
+				$data['left_boundary'],
+				$data['right_boundary'],
+				$data['keyword_before'],
+				$data['keyword_after'],
+				maybe_serialize( $data['post_types'] ),
+				maybe_serialize( $data['categories'] ),
+				maybe_serialize( $data['tags'] ),
+				$data['term_group_id'],
+				$data['limit'],
+				$data['case_sensitive_search'],
+				$data['open_new_tab'],
+				$data['use_nofollow'],
+				$data['priority']
+			);
 
 			// Insert into the database.
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
@@ -394,8 +434,8 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 			);
 
 			if ( false !== $query_result ) {
-				$this->shared->save_dismissible_notice(
-					__( 'The automatic link has been successfully added.', 'daext-autolinks-manager' ),
+				$this->shared->get_notices()->save_dismissible_notice(
+					__( 'The rule has been successfully added.', 'daext-autolinks-manager' ),
 					'updated'
 				);
 			}
@@ -436,7 +476,7 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 		// Remove the "attachment" post type.
 		$available_post_types_a = array_diff( $available_post_types_a, array( 'attachment' ) );
 
-		// Get the term groups.
+		// Get the target groups.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$term_group_a = $wpdb->get_results(
 			"SELECT term_group_id, name FROM {$wpdb->prefix}daextam_term_group ORDER BY term_group_id DESC",
@@ -499,8 +539,8 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 						'type'        => 'text',
 						'name'        => 'name',
 						'label'       => __( 'Name', 'daext-autolinks-manager' ),
-						'description' => __( 'The name of the automatic link.', 'daext-autolinks-manager' ),
-						'placeholder' => __( 'T-Shirts Automatic Link', 'daext-autolinks-manager' ),
+						'description' => __( 'Enter a name for this rule.', 'daext-autolinks-manager' ),
+						'placeholder' => __( 'T-Shirts', 'daext-autolinks-manager' ),
 						'value'       => isset( $item_obj ) ? $item_obj['name'] : null,
 						'maxlength'   => 100,
 						'required'    => true,
@@ -509,7 +549,7 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 						'type'        => 'select',
 						'name'        => 'category_id',
 						'label'       => __( 'Category', 'daext-autolinks-manager' ),
-						'description' => __( 'The category of the automatic link.', 'daext-autolinks-manager' ),
+						'description' => __( 'Assign a category to this rule.', 'daext-autolinks-manager' ),
 						'options'     => $category_a_option_value,
 						'value'       => isset( $item_obj ) ? $item_obj['category_id'] : $this->default_values['category_id'],
 						'required'    => true,
@@ -518,7 +558,7 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 						'type'        => 'text',
 						'name'        => 'keyword',
 						'label'       => __( 'Keyword', 'daext-autolinks-manager' ),
-						'description' => __( 'The keyword that will be converted to a link.', 'daext-autolinks-manager' ),
+						'description' => __( 'Enter the keyword that will be automatically converted into a link.', 'daext-autolinks-manager' ),
 						'placeholder' => __( 't-shirts', 'daext-autolinks-manager' ),
 						'value'       => isset( $item_obj ) ? $item_obj['keyword'] : null,
 						'maxlength'   => 255,
@@ -527,8 +567,8 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 					array(
 						'type'        => 'text',
 						'name'        => 'url',
-						'label'       => __( 'URL', 'daext-autolinks-manager' ),
-						'description' => __( 'The destination address of the link automatically generated on the keyword.', 'daext-autolinks-manager' ),
+						'label'       => __( 'Target URL', 'daext-autolinks-manager' ),
+						'description' => __( 'Enter the target URL for the generated link.', 'daext-autolinks-manager' ),
 						'placeholder' => __( 'https://example.com/t-shirts/', 'daext-autolinks-manager' ),
 						'value'       => isset( $item_obj ) ? $item_obj['url'] : null,
 						'maxlength'   => 2083,
@@ -537,8 +577,8 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 				),
 			),
 			array(
-				'label'          => 'HTML',
-				'section_id'     => 'html-options',
+				'label'          => 'Link Attributes',
+				'section_id'     => 'link-attributes',
 				'icon_id'        => 'code-browser',
 				'display_header' => true,
 				'fields'         => array(
@@ -546,8 +586,8 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 						'type'        => 'text',
 						'name'        => 'title',
 						'label'       => __( 'Title', 'daext-autolinks-manager' ),
-						'description' => __( 'The title attribute of the link automatically generated on the keyword.', 'daext-autolinks-manager' ),
-						'placeholder' => __('Shop Classic T-Shirts for Everyday Comfort', 'daext-autolinks-manager'),
+						'description' => __( 'Enter the title attribute for the generated link.', 'daext-autolinks-manager' ),
+						'placeholder' => __( 'Shop Classic T-Shirts for Everyday Comfort', 'daext-autolinks-manager' ),
 						'value'       => isset( $item_obj ) ? $item_obj['title'] : null,
 						'maxlength'   => 255,
 						'required'    => false,
@@ -556,7 +596,7 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 						'type'        => 'toggle',
 						'name'        => 'open_new_tab',
 						'label'       => __( 'Open in New Tab', 'daext-autolinks-manager' ),
-						'description' => __( 'Open the linked document in a new tab.', 'daext-autolinks-manager' ),
+						'description' => __( 'Open the generated link in a new tab.', 'daext-autolinks-manager' ),
 						'options'     => array(
 							'0' => 'No',
 							'1' => 'Yes',
@@ -567,7 +607,7 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 						'type'        => 'toggle',
 						'name'        => 'use_nofollow',
 						'label'       => __( 'Use Nofollow', 'daext-autolinks-manager' ),
-						'description' => __( 'Add the rel="nofollow" attribute to the link.', 'daext-autolinks-manager' ),
+						'description' => __( 'Add the rel="nofollow" attribute to the generated link.', 'daext-autolinks-manager' ),
 						'options'     => array(
 							'0' => 'No',
 							'1' => 'Yes',
@@ -577,8 +617,8 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 				),
 			),
 			array(
-				'label'          => 'Affected Posts',
-				'section_id'     => 'affected-posts',
+				'label'          => 'Apply To',
+				'section_id'     => 'apply-to',
 				'icon_id'        => 'layout-alt-03',
 				'display_header' => true,
 				'fields'         => array(
@@ -586,7 +626,7 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 						'type'        => 'select_multiple',
 						'name'        => 'post_types',
 						'label'       => __( 'Post Types', 'daext-autolinks-manager' ),
-						'description' => __( 'With this option you are able to determine in which post types the defined keywords will be automatically converted to a link. Leave this field empty to convert the keyword in any post type.', 'daext-autolinks-manager' ),
+						'description' => __( 'Select the post types where this rule is applied. Leave empty to apply it to all post types.', 'daext-autolinks-manager' ),
 						'options'     => $available_post_types_a,
 						'value'       => isset( $item_obj ) ? $item_obj['post_types'] : $this->default_values['post_types'],
 					),
@@ -594,7 +634,7 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 						'type'        => 'select_multiple',
 						'name'        => 'categories',
 						'label'       => __( 'Categories', 'daext-autolinks-manager' ),
-						'description' => __( 'With this option you are able to determine in which categories the defined keywords will be automatically converted to a link. Leave this field empty to convert the keyword in any category.', 'daext-autolinks-manager' ),
+						'description' => __( 'Select the categories where this rule is applied. Leave empty to apply it to all categories.', 'daext-autolinks-manager' ),
 						'options'     => $categories_option,
 						'value'       => isset( $item_obj ) ? $item_obj['categories'] : $this->default_values['categories'],
 					),
@@ -602,23 +642,23 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 						'type'        => 'select_multiple',
 						'name'        => 'tags',
 						'label'       => __( 'Tags', 'daext-autolinks-manager' ),
-						'description' => __( 'With this option you are able to determine in which tags the defined keywords will be automatically converted to a link. Leave this field empty to convert the keyword in any tag.', 'daext-autolinks-manager' ),
+						'description' => __( 'Select the tags where this rule is applied. Leave empty to apply it to all tags.', 'daext-autolinks-manager' ),
 						'options'     => $tags_option,
 						'value'       => isset( $item_obj ) ? $item_obj['tags'] : $this->default_values['tags'],
 					),
 					array(
 						'type'        => 'select',
 						'name'        => 'term_group_id',
-						'label'       => __( 'Term Group', 'daext-autolinks-manager' ),
-						'description' => __( 'The terms that will be compared with the ones available on the posts where the autolinks are applied. Please note that when a term group is selected the "Categories" and "Tags" options will be ignored.', 'daext-autolinks-manager' ),
+						'label'       => __( 'Target Group', 'daext-autolinks-manager' ),
+						'description' => __( 'Select the target groups where this rule is applied. Leave empty to apply it to all target groups.', 'daext-autolinks-manager' ),
 						'options'     => $term_group_a_option_value,
 						'value'       => isset( $item_obj ) ? $item_obj['term_group_id'] : $this->default_values['term_group_id'],
 					),
 				),
 			),
 			array(
-				'label'          => 'Advanced Match',
-				'section_id'     => 'advanced-match',
+				'label'          => 'Advanced Matching',
+				'section_id'     => 'advanced-matching',
 				'icon_id'        => 'settings-01',
 				'display_header' => true,
 				'fields'         => array(
@@ -626,7 +666,7 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 						'type'        => 'toggle',
 						'name'        => 'case_sensitive_search',
 						'label'       => __( 'Case Sensitive Search', 'daext-autolinks-manager' ),
-						'description' => __( 'Enable the case-sensitive search.', 'daext-autolinks-manager' ),
+						'description' => __( 'Match only the exact uppercase and lowercase variations of the keyword.', 'daext-autolinks-manager' ),
 						'options'     => array(
 							'0' => 'No',
 							'1' => 'Yes',
@@ -637,7 +677,7 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 						'type'        => 'select',
 						'name'        => 'left_boundary',
 						'label'       => __( 'Left Boundary', 'daext-autolinks-manager' ),
-						'description' => __( 'Use this option to match keywords preceded by a generic boundary or by a specific character.', 'daext-autolinks-manager' ),
+						'description' => __( 'Match keywords preceded by a generic boundary or a specific character.', 'daext-autolinks-manager' ),
 						'options'     => $boundary_options,
 						'value'       => isset( $item_obj ) ? $item_obj['left_boundary'] : $this->default_values['left_boundary'],
 					),
@@ -645,7 +685,7 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 						'type'        => 'select',
 						'name'        => 'right_boundary',
 						'label'       => __( 'Right Boundary', 'daext-autolinks-manager' ),
-						'description' => __( 'Use this option to match keywords followed by a generic boundary or by a specific character.', 'daext-autolinks-manager' ),
+						'description' => __( 'Match keywords followed by a generic boundary or a specific character.', 'daext-autolinks-manager' ),
 						'options'     => $boundary_options,
 						'value'       => isset( $item_obj ) ? $item_obj['right_boundary'] : $this->default_values['right_boundary'],
 					),
@@ -653,7 +693,7 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 						'type'        => 'text',
 						'name'        => 'keyword_before',
 						'label'       => __( 'Keyword Before', 'daext-autolinks-manager' ),
-						'description' => __( 'Use this option to match occurrences preceded by a specific string.', 'daext-autolinks-manager' ),
+						'description' => __( 'Match occurrences preceded by a specific string.', 'daext-autolinks-manager' ),
 						'value'       => isset( $item_obj ) ? $item_obj['keyword_before'] : null,
 						'maxlength'   => 255,
 						'required'    => false,
@@ -662,7 +702,7 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 						'type'        => 'text',
 						'name'        => 'keyword_after',
 						'label'       => __( 'Keyword After', 'daext-autolinks-manager' ),
-						'description' => __( 'Use this option to match occurrences followed by a specific string.', 'daext-autolinks-manager' ),
+						'description' => __( 'Match occurrences followed by a specific string.', 'daext-autolinks-manager' ),
 						'value'       => isset( $item_obj ) ? $item_obj['keyword_after'] : null,
 						'maxlength'   => 255,
 						'required'    => false,
@@ -671,7 +711,7 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 						'type'        => 'input_range',
 						'name'        => 'limit',
 						'label'       => __( 'Limit', 'daext-autolinks-manager' ),
-						'description' => __( 'With this option you can determine the maximum number of matches of the defined keyword automatically converted to a link.', 'daext-autolinks-manager' ),
+						'description' => __( 'Set the maximum number of matches that will be converted into links.', 'daext-autolinks-manager' ),
 						'value'       => isset( $item_obj ) ? $item_obj['limit'] : $this->default_values['limit'],
 						'min'         => 1,
 						'max'         => 1000,
@@ -680,7 +720,7 @@ class Daextam_Autolink_Menu_Elements extends Daextam_Menu_Elements {
 						'type'        => 'input_range',
 						'name'        => 'priority',
 						'label'       => __( 'Priority', 'daext-autolinks-manager' ),
-						'description' => __( 'The priority value determines the order used to apply the autolinks on the post.', 'daext-autolinks-manager' ),
+						'description' => __( 'Determine the order in which this rule is applied to the post.', 'daext-autolinks-manager' ),
 						'value'       => isset( $item_obj ) ? $item_obj['priority'] : $this->default_values['priority'],
 						'min'         => 0,
 						'max'         => 100,

@@ -23,18 +23,18 @@ class Daextam_Category_Menu_Elements extends Daextam_Menu_Elements {
 
 		$this->menu_slug          = 'category';
 		$this->slug_plural        = 'categories';
-		$this->label_singular     = __( 'Category', 'daext-autolinks-manager' );
-		$this->label_plural       = __( 'Categories', 'daext-autolinks-manager' );
+		$this->label_singular     = __('Category', 'daext-autolinks-manager');
+		$this->label_plural       = __('Categories', 'daext-autolinks-manager');
 		$this->primary_key        = 'category_id';
 		$this->db_table           = 'category';
 		$this->list_table_columns = array(
 			array(
 				'db_field' => 'name',
-				'label'    => __( 'Name', 'daext-autolinks-manager' ),
+				'label'    => __('Name', 'daext-autolinks-manager'),
 			),
 			array(
 				'db_field' => 'description',
-				'label'    => __( 'Description', 'daext-autolinks-manager' ),
+				'label'    => __('Description', 'daext-autolinks-manager'),
 			),
 		);
 		$this->searchable_fields  = array(
@@ -88,7 +88,7 @@ class Daextam_Category_Menu_Elements extends Daextam_Menu_Elements {
 
 			// Validation on "name".
 			if ( mb_strlen( trim( $data['name'] ) ) === 0 || mb_strlen( trim( $data['name'] ) ) > 100 ) {
-				$this->shared->save_dismissible_notice(
+				$this->shared->get_notices()->save_dismissible_notice(
 					__( 'Please enter a valid value in the "Name" field.', 'daext-autolinks-manager' ),
 					'error'
 				);
@@ -97,7 +97,7 @@ class Daextam_Category_Menu_Elements extends Daextam_Menu_Elements {
 
 			// Validation on "description".
 			if ( mb_strlen( trim( $data['description'] ) ) === 0 || mb_strlen( trim( $data['description'] ) ) > 255 ) {
-				$this->shared->save_dismissible_notice(
+				$this->shared->get_notices()->save_dismissible_notice(
 					__( 'Please enter a valid value in the "Description" field.', 'daext-autolinks-manager' ),
 					'error'
 				);
@@ -124,7 +124,7 @@ class Daextam_Category_Menu_Elements extends Daextam_Menu_Elements {
 			);
 
 			if ( false !== $query_result ) {
-				$this->shared->save_dismissible_notice(
+				$this->shared->get_notices()->save_dismissible_notice(
 					__( 'The category has been successfully updated.', 'daext-autolinks-manager' ),
 					'updated'
 				);
@@ -147,7 +147,7 @@ class Daextam_Category_Menu_Elements extends Daextam_Menu_Elements {
 				);
 
 			if ( false !== $query_result ) {
-				$this->shared->save_dismissible_notice(
+				$this->shared->get_notices()->save_dismissible_notice(
 					__( 'The category has been successfully added.', 'daext-autolinks-manager' ),
 					'updated'
 				);
@@ -207,9 +207,9 @@ class Daextam_Category_Menu_Elements extends Daextam_Menu_Elements {
 	 */
 	public function item_is_deletable( $item_id ) {
 
-		if ( $this->shared->category_is_used( $item_id ) ) {
+		if ( $this->shared->get_term_helpers()->category_is_used( $item_id ) ) {
 			$is_deletable               = false;
-			$dismissible_notice_message = __( "This category is associated with one or more autolinks and can't be deleted.", 'daext-autolinks-manager' );
+			$dismissible_notice_message = __( "This category is associated with one or more auto link rules and can't be deleted.", 'daext-autolinks-manager' );
 		} else {
 			$is_deletable               = true;
 			$dismissible_notice_message = null;

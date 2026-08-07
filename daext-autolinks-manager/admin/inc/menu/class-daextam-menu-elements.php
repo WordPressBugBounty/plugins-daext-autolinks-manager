@@ -202,17 +202,39 @@ class Daextam_Menu_Elements {
 			}
 		}
 
-			// Retrieve the total number of items.
+		// Retrieve the total number of items.
 
-			// phpcs:disable WordPress.DB.DirectDatabaseQuery
-			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $filter is already prepared.
-			$total_items = $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}daextam_$db_table $filter" );
+		// Build the full table name and escape any % in $filter so prepare() treats them as literals.
+		$full_db_table  = $wpdb->prefix . 'daextam_' . sanitize_key( $db_table );
+		$escaped_filter = str_replace( '%', '%%', $filter );
+
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,PluginCheck.Security.DirectDB.UnescapedDBParameter -- $escaped_filter is built from $wpdb->prepare(); %% doubling prevents misinterpretation by the outer prepare().
+		$total_items = $wpdb->get_var(
+			$wpdb->prepare( "SELECT COUNT(*) FROM %i {$escaped_filter}", $full_db_table )
+		);
+
+			// Find the correct capability option based on the menu slug.
+			switch ( $this->menu_slug ) {
+
+				case 'autolink':
+					$items_per_page = $this->shared->get( 'slug' ) . '_pagination_autolinks_menu';
+					break;
+
+				case 'category':
+					$items_per_page = $this->shared->get( 'slug' ) . '_pagination_autolinks_menu';
+					break;
+
+				case 'term-groups':
+					$items_per_page = $this->shared->get( 'slug' ) . '_pagination_autolinks_menu';
+					break;
+
+			}
 
 			// Initialize the pagination class.
 			require_once $this->shared->get( 'dir' ) . '/admin/inc/class-daextam-pagination.php';
 			$pag = new Daextam_Pagination( $this->shared );
 			$pag->set_total_items( $total_items );// Set the total number of items.
-			$pag->set_record_per_page(10); // Set records per page.
+			$pag->set_record_per_page(intval(get_option($items_per_page), 10)); // Set records per page.
 			$pag->set_target_page( 'admin.php?page=' . $this->shared->get( 'slug' ) . '-' . $page_slug );// Set target page.
 			$pag->set_current_page();// set the current page number from $_GET.
 
@@ -225,12 +247,15 @@ class Daextam_Menu_Elements {
 			// Sanitize the field name.
 			$db_primary_key = sanitize_key( $db_primary_key );
 
-			// phpcs:disable WordPress.DB.DirectDatabaseQuery
-			$results = $wpdb->get_results(
-				"SELECT * FROM {$wpdb->prefix}daextam_$db_table $filter ORDER BY $db_primary_key DESC $query_limit",
-				ARRAY_A
-			);
-			// phpcs:enable
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,PluginCheck.Security.DirectDB.UnescapedDBParameter -- $escaped_filter is built from $wpdb->prepare(); $db_primary_key/$query_limit are sanitized/safe.
+		$results = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT * FROM %i {$escaped_filter} ORDER BY $db_primary_key DESC {$query_limit}",
+				$full_db_table
+			),
+			ARRAY_A
+		);
+		// phpcs:enable
 
 			?>
 
@@ -298,7 +323,7 @@ class Daextam_Menu_Elements {
 														id="delete-item-<?php echo esc_attr( $result[ $db_primary_key ] ); ?>">
 													<?php wp_nonce_field( 'daextam_delete_' . $this->menu_slug . '_' . intval( $result[ $db_primary_key ], 10 ), 'daextam_clone_' . $this->menu_slug . '_nonce' ); ?>
 													<input type="hidden" name="delete_id" value="<?php echo esc_html( $result[ $db_primary_key ] ); ?>">
-													<button type="submit" value="<?php echo esc_html( $result[ $db_primary_key ] ); ?>"><?php esc_html_e( 'Delete', 'daext-autolinks-manager'); ?></button>
+													<button type="submit" value="<?php echo esc_html( $result[ $db_primary_key ] ); ?>"><?php esc_html_e( 'Delete', 'daext-autolinks-manager' ); ?></button>
 												</form>
 											</div>
 										</div>
@@ -355,12 +380,12 @@ class Daextam_Menu_Elements {
 					<div class="daextam-crud-table-controls__bulk-actions">
 						<form method="POST" action="admin.php?page=<?php echo esc_attr( $this->shared->get( 'slug' ) ); ?>-<?php echo esc_attr( $this->slug_plural ); ?>">
 							<select name="bulk_action" id="bulk_action">
-								<option value=""><?php esc_html_e( 'Bulk actions', 'daext-autolinks-manager'); ?></option>
-								<option value="delete"><?php esc_html_e( 'Delete', 'daext-autolinks-manager'); ?></option>
+								<option value=""><?php esc_html_e( 'Bulk actions', 'daext-autolinks-manager' ); ?></option>
+								<option value="delete"><?php esc_html_e( 'Delete', 'daext-autolinks-manager' ); ?></option>
 							</select>
 							<?php wp_nonce_field( 'daextam_bulk_action_' . $this->menu_slug, 'daextam_bulk_action_' . $this->menu_slug . '_nonce' ); ?>
 							<input id="bulk-action-selected-items" type="hidden" name="bulk-action-selected-items" value="">
-							<input id="daextam-submit-bulk-action" type="submit" class="button daextam-admin-page-button" value="<?php esc_html_e( 'Apply', 'daext-autolinks-manager'); ?>">
+							<input id="daextam-submit-bulk-action" type="submit" class="button daextam-admin-page-button" value="<?php esc_html_e( 'Apply', 'daext-autolinks-manager' ); ?>">
 						</form>
 					</div>
 
@@ -368,7 +393,7 @@ class Daextam_Menu_Elements {
 						<!-- Display the pagination -->
 						<?php if ( $pag->total_items > 0 ) : ?>
 							<div class="daextam-crud-table-controls__daext-tablenav">
-									<span class="daextam-crud-table-controls__daext-displaying-num"><?php echo esc_html( $pag->total_items ); ?>&nbsp<?php esc_html_e( 'items', 'daext-autolinks-manager'); ?></span>
+									<span class="daextam-crud-table-controls__daext-displaying-num"><?php echo esc_html( $pag->total_items ); ?>&nbsp<?php esc_html_e( 'items', 'daext-autolinks-manager' ); ?></span>
 									<?php $pag->show(); ?>
 							</div>
 						<?php endif; ?>
@@ -381,21 +406,21 @@ class Daextam_Menu_Elements {
 				<?php
 
 				if ( mb_strlen( trim( $filter ) ) > 0 ) {
-					$this->shared->save_dismissible_notice(
-						__( 'There are no results that match your filter.', 'daext-autolinks-manager'),
+					$this->shared->get_notices()->save_dismissible_notice(
+						__( 'There are no results that match your filter.', 'daext-autolinks-manager' ),
 						'updated'
 					);
 				}
 
 				// Display the dismissible notices.
-				$this->shared->display_dismissible_notices();
+				$this->shared->get_notices()->display_dismissible_notices();
 
 				// Display the search form of the CRUD menu.
 				$this->display_crud_menu_search_form( $post_search_input );
 
 				// If the filters are not applied and there are no items, display a message.
 				if ( 0 === mb_strlen( trim( $filter ) ) ) {
-					echo '<div class="daextam-crud-table__no-items-found-message">' . esc_html__( 'Nothing to show yet! Add some items by clicking the Add New button.', 'daext-autolinks-manager') . '</div>';
+					echo '<div class="daextam-crud-table__no-items-found-message">' . esc_html__( 'Nothing to show yet! Add some items by clicking the Add New button.', 'daext-autolinks-manager' ) . '</div>';
 				}
 
 				?>
@@ -417,14 +442,15 @@ class Daextam_Menu_Elements {
 	public function header_bar() {
 
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Nonce not required for data visualization.
-		$action  = isset( $_GET['action'] ) ? sanitize_key( $_GET['action'] ) : 'list';
-		$edit_id = isset( $_GET['edit_id'] ) ? absint( $_GET['edit_id'] ) : null;
+		$action       = isset( $_GET['action'] ) ? sanitize_key( $_GET['action'] ) : 'list';
+		$edit_id      = isset( $_GET['edit_id'] ) ? absint( $_GET['edit_id'] ) : null;
+		$current_page = isset( $_GET['page'] ) ? sanitize_key( $_GET['page'] ) : '';
 		// phpcs:enable
 
 		if ( 'new' === $action ) {
-			$page_title = __( 'Add New', 'daext-autolinks-manager') . ' ' . $this->label_singular;
+			$page_title = __( 'Add New', 'daext-autolinks-manager' ) . ' ' . $this->label_singular;
 		} elseif ( null !== $edit_id ) {
-			$page_title = __( 'Edit', 'daext-autolinks-manager') . ' ' . $this->label_singular;
+			$page_title = __( 'Edit', 'daext-autolinks-manager' ) . ' ' . $this->label_singular;
 		} else {
 			$page_title = $this->label_plural;
 		}
@@ -437,16 +463,19 @@ class Daextam_Menu_Elements {
 				<div class="daextam-header-bar__page-title"><?php echo esc_html( $page_title ); ?></div>
 				<?php if ( 'list' === $action && 'crud' === $this->context && null === $edit_id ) : ?>
 					<a href="<?php echo esc_url( get_admin_url() . 'admin.php?page=daextam-' . $this->slug_plural . '&action=new' ); ?>"
-						class="daextam-button daextam-header-bar__add-new-button">
-						<?php $this->shared->echo_icon_svg( 'plus' ); ?>
-						<div class="daextam-header-bar__add-new-button-text"><?php esc_html_e( 'Add New', 'daext-autolinks-manager'); ?></div>
+						class="daextam-button daextam-header-bar__action-button">
+						<?php $this->shared->get_admin_helper()->echo_icon_svg( 'plus' ); ?>
+						<div class="daextam-header-bar__action-button-text"><?php esc_html_e( 'Add New', 'daext-autolinks-manager' ); ?></div>
 					</a>
 				<?php endif; ?>
 			</div>
 
 			<div class="daextam-header-bar__right">
 				<?php if ( 'new' === $action || null !== $edit_id ) : ?>
-					<a href="#" onclick="document.getElementById('form1').submit()" class="daextam-btn daextam-btn-primary"><?php esc_html_e( 'Save Changes', 'daext-autolinks-manager'); ?></a>
+					<a href="#" onclick="document.getElementById('form1').submit()" class="daextam-btn daextam-btn-primary"><?php esc_html_e( 'Save Changes', 'daext-autolinks-manager' ); ?></a>
+				<?php endif; ?>
+				<?php if ( 'bulk-import' === $this->menu_slug ) : ?>
+					<input id="generate-autolinks" class="daextam-btn daextam-btn-primary" type="submit" value="<?php esc_attr_e( 'Create Rules', 'daext-autolinks-manager' ); ?>">
 				<?php endif; ?>
 			</div>
 
@@ -515,16 +544,17 @@ class Daextam_Menu_Elements {
 				// Sanitize the field name.
 				$primary_key = sanitize_key( $this->primary_key );
 
-				// phpcs:disable WordPress.DB.DirectDatabaseQuery
-				// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $db_table_name and $primary_key are sanitized above.
-				$item_obj = $wpdb->get_row(
-					$wpdb->prepare(
-						"SELECT * FROM $db_table_name WHERE $primary_key = %d",
-						$edit_id
-					),
-					ARRAY_A
-				);
-				// phpcs:enable
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $db_table_name and $primary_key use %i placeholders.
+		$item_obj = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT * FROM %i WHERE %i = %d",
+				$db_table_name,
+				$primary_key,
+				$edit_id
+			),
+			ARRAY_A
+		);
+		// phpcs:enable
 
 				wp_nonce_field( 'daextam_create_update_' . $this->menu_slug, 'daextam_create_update_' . $this->menu_slug . '_nonce' );
 
@@ -557,11 +587,11 @@ class Daextam_Menu_Elements {
 
 		<div class="daextam-main-form__section-header group-trigger" data-trigger-target="<?php echo esc_attr( $section_id ); ?>">
 			<div class="daextam-main-form__section-header-title">
-				<?php $this->shared->echo_icon_svg( $icon_id ); ?>
+				<?php $this->shared->get_admin_helper()->echo_icon_svg( $icon_id ); ?>
 				<div class="daextam-main-form__section-header-title-text"><?php echo esc_html( $label ); ?></div>
 			</div>
 			<div class="daextam-main-form__section-header-toggle">
-				<?php $this->shared->echo_icon_svg( 'chevron-down' ); ?>
+				<?php $this->shared->get_admin_helper()->echo_icon_svg( 'chevron-down' ); ?>
 			</div>
 		</div>
 
@@ -853,7 +883,7 @@ class Daextam_Menu_Elements {
 			<div class="daextam-admin-toolbar__left-section">
 				<div class="daextam-admin-toolbar__menu-items">
 					<a href="<?php echo esc_url( admin_url( 'admin.php?page=daextam-dashboard' ) ); ?>" class="daextam-admin-toolbar__plugin-logo">
-						<img src="<?php echo esc_url( $this->shared->get( 'url' ) . 'admin/assets/img/plugin-logo.svg' ); ?>" alt="Autolinks Manager" />
+						<img src="<?php echo esc_url( $this->shared->get( 'url' ) . 'admin/assets/img/plugin-logo.svg' ); ?>" alt="Link Manager" />
 					</a>
 					<?php
 
@@ -863,7 +893,7 @@ class Daextam_Menu_Elements {
 
 						<a href="<?php echo esc_attr( $item['link_url'] ); ?>" class="daextam-admin-toolbar__menu-item <?php echo 'daextam-' . $this->menu_slug === $item['menu_slug'] ? 'is-active' : ''; ?>">
 							<div class="daextam-admin-toolbar__menu-item-wrapper">
-								<?php $this->shared->echo_icon_svg( $item['icon'] ); ?>
+								<?php $this->shared->get_admin_helper()->echo_icon_svg( $item['icon'] ); ?>
 								<div class="daextam-admin-toolbar__menu-item-text"><?php echo esc_html( $item['link_text'] ); ?></div>
 							</div>
 						</a>
@@ -876,9 +906,9 @@ class Daextam_Menu_Elements {
 
 					<div class="daextam-admin-toolbar__menu-item daextam-admin-toolbar__menu-item-more">
 						<div class="daextam-admin-toolbar__menu-item-wrapper">
-							<?php $this->shared->echo_icon_svg( 'grid-01' ); ?>
-							<div class="daextam-admin-toolbar__menu-item-text"><?php esc_html_e( 'More', 'daext-autolinks-manager'); ?></div>
-							<?php $this->shared->echo_icon_svg( 'chevron-down' ); ?>
+							<?php $this->shared->get_admin_helper()->echo_icon_svg( 'grid-01' ); ?>
+							<div class="daextam-admin-toolbar__menu-item-text"><?php esc_html_e( 'More', 'daext-autolinks-manager' ); ?></div>
+							<?php $this->shared->get_admin_helper()->echo_icon_svg( 'chevron-down' ); ?>
 						</div>
 						<ul class="daextam-admin-toolbar__pop-sub-menu">
 
@@ -889,12 +919,20 @@ class Daextam_Menu_Elements {
 								?>
 
 								<li>
-									<a href="<?php echo esc_attr( $more_item['link_url'] ); ?>" <?php echo 1 === intval( $more_item['pro_badge'], 10 ) ? 'target="_blank"' : ''; ?>>
+									<a href="<?php echo esc_attr( $more_item['link_url'] ); ?>"
+											<?php
+
+											if ( true === isset( $more_item['pro_badge'] ) && $more_item['pro_badge'] ) {
+												echo ' target="_blank"';
+											}
+
+											?>
+									>
 										<?php echo '<div class="daextam-admin-toolbar__more-item-item-text">' . esc_html( $more_item['link_text'] ) . '</div>'; ?>
 										<?php
 
 										if ( true === isset( $more_item['pro_badge'] ) && $more_item['pro_badge'] ) {
-											echo '<div class="daextam-admin-toolbar__pro-badge">' . esc_html__( 'PRO', 'daext-autolinks-manager') . '</div>';
+											echo '<div class="daextam-admin-toolbar__pro-badge">' . esc_html__( 'PRO', 'daext-autolinks-manager' ) . '</div>';
 										}
 
 										?>
@@ -914,9 +952,9 @@ class Daextam_Menu_Elements {
 			<div class="daextam-admin-toolbar__right-section">
 				<!-- Display the upgrade button in the Free version. -->
 				<?php if ( constant( 'DAEXTAM_EDITION' ) === 'FREE' ) : ?>
-				<a href="https://daext.com/autolinks-manager/" target="_blank" class="daextam-admin-toolbar__upgrade-button">
-					<?php $this->shared->echo_icon_svg( 'diamond-01' ); ?>
-					<div class="daextam-admin-toolbar__upgrade-button-text"><?php esc_html_e( 'Unlock Extra Features with AM Pro', 'daext-autolinks-manager'); ?></div>
+				<a href="https://daext.com/link-manager/" target="_blank" class="daextam-admin-toolbar__upgrade-button">
+					<?php $this->shared->get_admin_helper()->echo_icon_svg( 'diamond-01' ); ?>
+					<div class="daextam-admin-toolbar__upgrade-button-text"><?php esc_html_e( 'Unlock Extra Features with AM Pro', 'daext-autolinks-manager' ); ?></div>
 				</a>
 				<?php endif; ?>
 				<a href="https://daext.com" target="_blank" class="daextam-admin-toolbar__daext-logo-container">
@@ -940,6 +978,10 @@ class Daextam_Menu_Elements {
 			return;
 		}
 
+		if ( 'options' !== $this->menu_slug ) {
+			return;
+		}
+
 		?>
 
 		<div class="daextam-admin-body">
@@ -950,30 +992,30 @@ class Daextam_Menu_Elements {
 
 					<div class="daextam-pro-features__left">
 						<div class="daextam-pro-features__title">
-							<div class="daextam-pro-features__title-text"><?php esc_html_e( 'Unlock Advanced Features with Autolinks Manager Pro', 'daext-autolinks-manager'); ?></div>
-							<div class="daextam-pro-features__pro-badge"><?php esc_html_e( 'PRO', 'daext-autolinks-manager'); ?></div>
+							<div class="daextam-pro-features__title-text"><?php esc_html_e( 'Unlock Advanced Features with Link Manager Pro', 'daext-autolinks-manager' ); ?></div>
+							<div class="daextam-pro-features__pro-badge"><?php esc_html_e( 'PRO', 'daext-autolinks-manager' ); ?></div>
 						</div>
 						<div class="daextam-pro-features__description">
 							<?php
 							esc_html_e(
-								'Bulk import automatic link keywords, find broken links, track clicks on the links, quickly configure multiple sites using XML data, set what actions WordPress users can perform within the plugin, and more!',
+								'Find broken links, track clicks, get full link analytics with internal links breakdown and domain reporting, receive internal link suggestions, bulk create rules from a spreadsheet, and more.',
 								'daext-autolinks-manager'
 							);
 							?>
 						</div>
 						<div class="daextam-pro-features__buttons-container">
-							<a class="daextam-pro-features__button-1" href="https://daext.com/autolinks-manager/" target="_blank">
+							<a class="daextam-pro-features__button-1" href="https://daext.com/link-manager/#benefits" target="_blank">
 								<div class="daextam-pro-features__button-text">
-									<?php esc_html_e( 'Learn More', 'daext-autolinks-manager'); ?>
+									<?php esc_html_e( 'Learn More', 'daext-autolinks-manager' ); ?>
 								</div>
-								<?php $this->shared->echo_icon_svg( 'arrow-up-right' ); ?>
+								<?php $this->shared->get_admin_helper()->echo_icon_svg( 'arrow-up-right' ); ?>
 							</a>
-							<a class="daextam-pro-features__button-2" href="https://daext.com/autolinks-manager/#pricing" target="_blank">
+							<a class="daextam-pro-features__button-2" href="https://daext.com/link-manager/#pricing" target="_blank">
 								<div class="daextam-pro-features__button-text">
-									<?php esc_html_e( 'View Pricing & Upgrade', 'daext-autolinks-manager'); ?>
+									<?php esc_html_e( 'View Pricing & Upgrade', 'daext-autolinks-manager' ); ?>
 								</div>
 								<?php
-								$this->shared->echo_icon_svg( 'arrow-up-right' );
+								$this->shared->get_admin_helper()->echo_icon_svg( 'arrow-up-right' );
 								?>
 							</a>
 						</div>
@@ -984,14 +1026,24 @@ class Daextam_Menu_Elements {
 
 						$pro_features_data_a = array(
 							array(
-								'icon'        => 'link-03',
-								'name_part_1' => 'Automatic',
+								'icon'        => 'bar-chart-07',
+								'name_part_1' => 'Link',
+								'name_part_2' => 'Analytics',
+							),
+							array(
+								'icon'        => 'check-circle-broken',
+								'name_part_1' => 'Broken',
 								'name_part_2' => 'Links',
 							),
 							array(
-								'icon'        => 'bar-chart-07',
+								'icon'        => 'cursor-click-02',
+								'name_part_1' => 'Click',
+								'name_part_2' => 'Tracking',
+							),
+							array(
+								'icon'        => 'stars-02',
 								'name_part_1' => 'Link',
-								'name_part_2' => 'Statistics',
+								'name_part_2' => 'Suggestions',
 							),
 							array(
 								'icon'        => 'intersect-square',
@@ -999,19 +1051,9 @@ class Daextam_Menu_Elements {
 								'name_part_2' => 'Operations',
 							),
 							array(
-								'icon'        => 'share-05',
-								'name_part_1' => 'Exportable',
-								'name_part_2' => 'Data',
-							),
-							array(
-								'icon'        => 'check-circle-broken',
-								'name_part_1' => 'Link',
-								'name_part_2' => 'Checker',
-							),
-							array(
-								'icon'        => 'cursor-click-02',
-								'name_part_1' => 'Click',
-								'name_part_2' => 'Tracking',
+								'icon'        => 'log-in-02',
+								'name_part_1' => 'Importable',
+								'name_part_2' => 'Data'
 							),
 						);
 
@@ -1021,7 +1063,7 @@ class Daextam_Menu_Elements {
 
 							<div class="daextam-pro-features__single-feature">
 								<div class="daextam-pro-features__single-feature-wrapper">
-									<?php $this->shared->echo_icon_svg( $pro_feature_data['icon'] ); ?>
+									<?php $this->shared->get_admin_helper()->echo_icon_svg( $pro_feature_data['icon'] ); ?>
 									<div class="daextam-pro-features__single-feature-name">
 										<?php echo esc_html( $pro_feature_data['name_part_1'] ); ?>
 										<br>
@@ -1043,13 +1085,13 @@ class Daextam_Menu_Elements {
 				<div class="daextam-pro-features__footer-wrapper">
 					<div class="daextam-pro-features__footer-wrapper-inner">
 						<div class="daextam-pro-features__footer-wrapper-left">
-							<?php esc_html_e( 'Built for WordPress creators by the DAEXT team', 'daext-autolinks-manager'); ?>
+							<?php esc_html_e( 'Built for WordPress creators by the DAEXT team', 'daext-autolinks-manager' ); ?>
 						</div>
 						<a class="daextam-pro-features__footer-wrapper-right" href="https://daext.com/products/" target="_blank">
 							<div class="daextam-pro-features__footer-wrapper-right-text">
-								<?php esc_html_e( 'More Tools from DAEXT', 'daext-autolinks-manager'); ?>
+								<?php esc_html_e( 'More Tools from DAEXT', 'daext-autolinks-manager' ); ?>
 							</div>
-							<?php $this->shared->echo_icon_svg( 'arrow-up-right' ); ?>
+							<?php $this->shared->get_admin_helper()->echo_icon_svg( 'arrow-up-right' ); ?>
 						</a>
 					</div>
 				</div>
@@ -1082,8 +1124,8 @@ class Daextam_Menu_Elements {
 
 			$this->duplicate_record( $this->db_table, $this->primary_key, $data['clone_id'] );
 
-			$this->shared->save_dismissible_notice(
-				__( 'The item has been successfully duplicated.', 'daext-autolinks-manager'),
+			$this->shared->get_notices()->save_dismissible_notice(
+				__( 'The item has been successfully duplicated.', 'daext-autolinks-manager' ),
 				'updated'
 			);
 
@@ -1115,7 +1157,7 @@ class Daextam_Menu_Elements {
 			// prevent deletion if the item is not deletable.
 			if ( ! $result['is_deletable'] ) {
 
-				$this->shared->save_dismissible_notice(
+				$this->shared->get_notices()->save_dismissible_notice(
 					$result['dismissible_notice_message'],
 					'error'
 				);
@@ -1130,16 +1172,15 @@ class Daextam_Menu_Elements {
 				// Sanitize the field name.
 				$primary_key = sanitize_key( $this->primary_key );
 
-				// phpcs:disable WordPress.DB.DirectDatabaseQuery
-				// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $db_table_name and $primary_key are sanitized above.
-				$query_result = $wpdb->query(
-					$wpdb->prepare( "DELETE FROM $db_table_name WHERE $primary_key = %d", $data['delete_id'] )
-				);
-				// phpcs:enable
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery -- $db_table_name and $primary_key use %i placeholders.
+		$query_result = $wpdb->query(
+			$wpdb->prepare( "DELETE FROM %i WHERE %i = %d", $db_table_name, $primary_key, $data['delete_id'] )
+		);
+		// phpcs:enable
 
 				if ( false !== $query_result ) {
-					$this->shared->save_dismissible_notice(
-						__( 'The item has been successfully deleted.', 'daext-autolinks-manager'),
+					$this->shared->get_notices()->save_dismissible_notice(
+						__( 'The item has been successfully deleted.', 'daext-autolinks-manager' ),
 						'updated'
 					);
 				}
@@ -1198,19 +1239,16 @@ class Daextam_Menu_Elements {
 
 				if ( count( $delete_id_deletable ) > 0 ) {
 
-					// Sanitize the db table name.
-					$table_name = sanitize_key( $table_name );
-
 					// Sanitize the field name.
 					$primary_key_name = sanitize_key( $this->primary_key );
+					$in_clause        = implode( ',', array_map( 'intval', $delete_id_deletable ) );
 
-					// phpcs:disable WordPress.DB.DirectDatabaseQuery
-					// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $variables are sanitized above.
-					// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared
-					$query_result = $wpdb->query(
-						"DELETE FROM $table_name WHERE $primary_key_name IN (" . implode( ',', $delete_id_deletable ) . ')'
-					);
-					// phpcs:enable
+				// phpcs:disable WordPress.DB.DirectDatabaseQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table_name/$primary_key_name use %i; $in_clause contains only integers.
+				$query_result = $wpdb->query(
+					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					$wpdb->prepare( "DELETE FROM %i WHERE %i IN ($in_clause)", $table_name, $primary_key_name )
+				);
+				// phpcs:enable
 
 				}
 
@@ -1219,8 +1257,8 @@ class Daextam_Menu_Elements {
 					// Get the number of deleted items with $wpdb.
 					$deleted_items_count = $wpdb->rows_affected;
 
-					$this->shared->save_dismissible_notice(
-						$deleted_items_count . ' ' . __( 'items have been successfully deleted.', 'daext-autolinks-manager'),
+					$this->shared->get_notices()->save_dismissible_notice(
+						$deleted_items_count . ' ' . __( 'items have been successfully deleted.', 'daext-autolinks-manager' ),
 						'updated'
 					);
 
@@ -1228,8 +1266,8 @@ class Daextam_Menu_Elements {
 
 				if ( count( $delete_id_non_deletable ) > 0 ) {
 
-					$this->shared->save_dismissible_notice(
-						__( 'The', 'daext-autolinks-manager' ) . ' ' . strtolower( $this->label_plural ) . ' ' . __( "with the following IDs are used in one or more automatic links and can't be deleted:", 'daext-autolinks-manager') . ' ' . implode( ', ', $delete_id_non_deletable ) . '.',
+					$this->shared->get_notices()->save_dismissible_notice(
+						__( 'The', 'daext-autolinks-manager' ) . ' ' . strtolower( $this->label_plural ) . ' ' . __( "with the following IDs are used in one or more automatic links and can't be deleted:", 'daext-autolinks-manager' ) . ' ' . implode( ', ', $delete_id_non_deletable ) . '.',
 						'error'
 					);
 
@@ -1248,7 +1286,7 @@ class Daextam_Menu_Elements {
 	public function verify_user_capability() {
 
 		if ( ! current_user_can( $this->capability ) ) {
-			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'daext-autolinks-manager') );
+			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'daext-autolinks-manager' ) );
 		}
 	}
 
@@ -1270,7 +1308,10 @@ class Daextam_Menu_Elements {
 			<?php
 
 			// Display the dismissible notices.
-			$this->shared->display_dismissible_notices();
+			$this->shared->get_notices()->display_dismissible_notices();
+
+			// Display the license activation notice.
+			$this->shared->get_notices()->display_license_activation_notice();
 
 			// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Nonce not required for data visualization.
 			$action  = isset( $_GET['action'] ) ? sanitize_key( $_GET['action'] ) : 'list';
@@ -1299,7 +1340,7 @@ class Daextam_Menu_Elements {
 		</div>
 
 		<!-- Dialog Confirm -->
-		<div id="dialog-confirm" title="<?php esc_attr_e( 'Delete the item?', 'daext-autolinks-manager'); ?>" class="daext-display-none">
+		<div id="dialog-confirm" title="<?php esc_attr_e( 'Delete the item?', 'daext-autolinks-manager' ); ?>" class="daext-display-none">
 			<p>
 			<?php
 			esc_html_e(
@@ -1331,17 +1372,15 @@ class Daextam_Menu_Elements {
 
 		// retrieve the record to duplicate.
 
-		// Sanitize the db table name.
-		$table_name = sanitize_key( $table_name );
-
 		// Sanitize the field name.
 		$primary_key_name = sanitize_key( $primary_key_name );
 
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table_name and $primary_key are sanitized above.
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery -- $table_name and $primary_key_name use %i placeholders.
 		$record = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT * FROM $table_name WHERE $primary_key_name = %d",
+				"SELECT * FROM %i WHERE %i = %d",
+				$table_name,
+				$primary_key_name,
 				$primary_key_value
 			),
 			ARRAY_A
@@ -1488,6 +1527,8 @@ class Daextam_Menu_Elements {
 		// Display the Header Bar.
 		$this->header_bar();
 
+		$this->display_autolink_tabs(); // new call
+
 		// Display the main content of the menu.
 		if ( 'crud' === $this->context ) {
 
@@ -1538,5 +1579,38 @@ class Daextam_Menu_Elements {
 		</form>
 
 		<?php
+	}
+
+	public function display_autolink_tabs() {
+
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Nonce not required for data visualization.
+		$action       = isset( $_GET['action'] ) ? sanitize_key( $_GET['action'] ) : 'list';
+		$edit_id      = isset( $_GET['edit_id'] ) ? absint( $_GET['edit_id'] ) : null;
+		$current_page = isset( $_GET['page'] ) ? sanitize_key( $_GET['page'] ) : '';
+
+		?>
+
+		<?php if ( in_array( $this->menu_slug, array(
+						'autolink',
+						'category',
+						'term-groups'
+				), true ) && 'new' !== $action && null === $edit_id ) : ?>
+
+
+			<div class="daextam-autolink-tabs">
+				<div class="daextam-tabs">
+					<button onclick="window.location.href='<?php echo esc_url( admin_url( 'admin.php?page=daextam-autolinks' ) ); ?>'"
+					        data-active="<?php echo ( 'daextam-autolinks' === $current_page ) ? 'true' : 'false'; ?>"><?php esc_html_e( 'Rules', 'daext-autolinks-manager' ); ?></button>
+					<button onclick="window.location.href='<?php echo esc_url( admin_url( 'admin.php?page=daextam-categories' ) ); ?>'"
+					        data-active="<?php echo ( 'daextam-categories' === $current_page ) ? 'true' : 'false'; ?>"><?php esc_html_e( 'Categories', 'daext-autolinks-manager' ); ?></button>
+					<button onclick="window.location.href='<?php echo esc_url( admin_url( 'admin.php?page=daextam-term-groups' ) ); ?>'"
+					        data-active="<?php echo ( 'daextam-term-groups' === $current_page ) ? 'true' : 'false'; ?>"><?php esc_html_e( 'Target Groups', 'daext-autolinks-manager' ); ?></button>
+				</div>
+			</div>
+
+		<?php endif; ?>
+
+		<?php
+
 	}
 }

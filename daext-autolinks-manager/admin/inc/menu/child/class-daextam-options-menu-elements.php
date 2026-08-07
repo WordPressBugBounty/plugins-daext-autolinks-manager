@@ -23,12 +23,13 @@ class Daextam_Options_Menu_Elements extends Daextam_Menu_Elements {
 
 		$this->menu_slug      = 'options';
 		$this->slug_plural    = 'options';
-		$this->label_singular = __( 'Options', 'daext-autolinks-manager' );
-		$this->label_plural   = __( 'Options', 'daext-autolinks-manager' );
+		$this->label_singular = __( 'Settings', 'daext-autolinks-manager' );
+		$this->label_plural   = __( 'Settings', 'daext-autolinks-manager' );
+
 	}
 
 	/**
-	 * Display the body content.
+	 * Display the content of the body.
 	 *
 	 * @return void
 	 */
@@ -43,5 +44,7 @@ class Daextam_Options_Menu_Elements extends Daextam_Menu_Elements {
 		</div>
 
 		<?php
+
 	}
+
 }

@@ -1,134 +1,96 @@
-=== Autolinks Manager - SEO Auto Linker ===
+=== Link Manager - Analyze, Automate, and Monitor Links ===
 Contributors: DAEXT
-Tags: automatic linking, automatic links, SEO auto linker, link building, internal links
+Tags: internal links, link building, automatic links, seo, link equity
 Donate link: https://daext.com
-Requires at least: 4.5
-Tested up to: 6.9
-Requires PHP: 5.3
-Stable tag: 1.10.11
+Requires at least: 5.9
+Tested up to: 7.0
+Requires PHP: 7.4
+Stable tag: 1.10.12
 License: GPLv3
 
-Automate your affiliate links, increase product page visits, link glossary keywords, and more with this advanced SEO auto-linker plugin.
+A complete link management solution that helps you analyze internal links, monitor link equity, automate keyword-based linking, and more.
 
 == Description ==
-Applying autolinks in your website is a smart strategy to generate more visits on your pages, sell more products, earn money with a referral system or to improve your SEO.
 
-The Autolinks Manager plugin, with its advanced autolinks system and a great number of options, gives you the ability to apply this strategy at its maximum level.
+[Link Manager](https://daext.com/link-manager/) is a WordPress plugin that gives you complete visibility into your internal linking structure, estimates link equity across your content, and automatically converts keywords into links.
 
-### Pro Version
+The plugin adds to WordPress the following features:
 
-For professional users, we distribute a [Pro Version](https://daext.com/autolinks-manager/) of this plugin.
+- Internal links analysis
+- Link equity analysis
+- An algorithm that evaluates the internal links optimization status
+- Automatic keyword-based link creation with granular targeting and matching options
+- Export of plugin configuration
 
-### Technical Details
+=== Pro Version ===
 
-The total control on the application of the autolinks is what really matters in an autolink plugin.
+A [Pro Version](https://daext.com/link-manager/) is also available with additional features, including:
 
-#### Unaltered HTML
-The autolinks are applied on the fly by PHP when the post are displayed in the front-end and no changes are performed on the actual HTML of the post stored in the database. So you can at anytime add, remove or modify your autolinks without negative implications for your website.
+- A comprehensive Dashboard with dedicated tabs for internal links, automatic links, and a Domains Report showing every external domain your content links to
+- Broken link monitoring with HTTP status code checking
+- Click tracking for every link on your site, automatic or manual, internal or external
+- Internal links suggestions in the post editor, scored by title overlap, categories, tags, and post type
+- Bulk creation of automatic link rules from a spreadsheet
+- Exportable reports in CSV format for dashboard statistics, link equity, click tracking, and broken links
+- Access control to configure which user roles can access each plugin menu and editor panel
 
-#### Custom Attributes
-The HTML link elements generated with the applications of autolinks can be created with:
+=== Monitor your internal links ===
 
-* Custom Title attribute to describe the linked document
-* Custom Target attribute to open the linked document in a new window or tab
-* Custom Nofollow attribute to instruct the search engines that the link should not influence the ranking of the link’s target
+Keep track of all the internal links in your content with the **Dashboard** menu. Here you will find a list of your posts along with internal link data including the current number of automatic links applied and the link equity accumulated by each URL.
 
-#### Affected Posts
-Sometimes specific autolinks should not be applied on the entire website, but only activated with specific topics.
+The filter and search tools let you quickly find specific posts or sort the data by any available metric.
 
-That’s why with this plugin for each autolink you can determine:
+=== Calculate the link equity ===
 
-* In which post types the defined keyword should be automatically converted to a link
-* In which categories the defined keyword should be automatically converted to a link
-* In which tags the defined keyword should be automatically converted to a link
-* The term group, which is a list of terms that should be compared with the ones available on the posts where the autolinks are applied
+Visit the **Link Equity** menu to receive an estimate of the link equity for all the URLs linked in your content.
 
-#### Advanced Match
-The search for occurrences of the keyword performed by the algorithm used to apply the autolink can be tuned based on your specific needs with the following options:
+Use this information to improve the distribution of link equity across your site, strengthen your most important pages, or improve the SEO performance of your product pages.
 
-* The Case Sensitive Search option to select if the defined keyword should match or not uppercase and lowercase variations
-* The Left Boundary option to match keywords preceded by a generic boundary or by a specific character
-* The Right Boundary option to match keywords followed by a generic boundary or by a specific character
-* The Keyword Before option to match occurrences preceded by a specific string
-* The Keyword After option to match occurrences followed by a specific string
-* The Limit option to determine the maximum number of matches of the defined keyword automatically converted to a link
-* The Priority option to determine the order used to apply the autolinks on the post
+=== Automate keyword-based linking ===
 
-#### Test Mode
-This feature, if enabled through the Test Mode plugin option, allows you to apply the autolinks on the front-end of your website only to the WordPress users that have the capability required to create and edit autolinks. So you can easily test the application of the autolinks in a production environment without actually changing the content of the posts for your visitors and for the search engines.
+Define a keyword and a target URL once, and the plugin automatically converts every matching occurrence into a link across your eligible content. You can restrict each rule to specific post types, categories, or tags, and configure advanced keyword boundary and matching options to control exactly which occurrences are converted.
 
-#### Random Prioritization
-The advanced Random Prioritization option is extremely useful to randomize on a per-post basis the order used to apply the autolinks with the same priority and as a consequence to ensure a better distribution of the autolinks.
+=== Optimize the number of internal links ===
 
-#### General Limit
-A limit for the maximum number of autolinks allowed in the same post can be determined with a fixed value assigned to the General Limit (Amount) option or automatically calculated based on the length of the post and the value assigned to the General Limit (Characters per Autolink) option.
+Receive information about the optimization status of your internal links while editing a post with the **Internal Links Optimization** panel. The panel compares the current number of internal links against a recommended range calculated from the post's content length.
 
-The use of the General Limit feature is recommended to limit the application of the autolinks to a reasonable amount.
+=== Customize the plugin behavior ===
 
-#### Same URL Limit
-Use this option to limit the number of autolinks with the same URL to a specified value. This option is useful when you have multiple keywords that point to the same resource and you want to limit the number of times that a resource is linked.
-
-#### Protected Tags
-With this option you can instruct the algorithm to not apply the autolinks on specific HTML tags present in your posts.
-
-Let’s say that you don’t want to add autolinks inside the main headings, the tables and the code snippets. Simply add the list “h1, h2, h3, table, code” in the Protected Tags option and you are done.
-
-#### Categories
-The plugin includes the possibility to categorize your autolinks, this is extremely useful when you have a high number of autolinks used for different purposes.
-
-For example you can:
-
-* Create autolinks to convert keywords that are part of a glossary and include them in the “Wiki” category
-* Create autolinks to convert keywords associated with products sold by an external website and include them in the “Referral” category
-* Create autolinks to convert keywords associated with your best articles and include them in the “Internal Links” category
-
-#### Meta Box
-The Autolinks Manager meta box allows you to disable the application of the autolinks on a per-post basis. Simply visit the post where you don’t want to apply the autolinks and set to “No” the Enable Autolinks select-box available in the meta box.
-
-#### Extremely Customizable
-With the 33 general options you can control various aspects of the plugin. You can for example set the default values for the new autolinks, control how the analysis performed on the posts should be executed, control advanced aspects associated with the application of the autolinks, and more.
-
-#### Gutenberg Ready
-This plugin allows you to select exactly on which Gutenberg blocks the autolinks should be applied. So you can be very precise in the application of the autolinks and avoid any kind of issue associated with the application of autolinks on Gutenberg blocks.
-
-#### Multisite Ready
-This plugin can be used on a WordPress Network, and supports both a Network Activation (the plugin will be activated on all the sites of your WordPress Network in a single step) and a Single Site Activation (the plugin will be manually activated on single sites of the network)
-
-#### Credits
-This plugin makes use of the following resources:
-
-* [Select2](https://select2.org/) licensed under the MIT License
-
-For each library you can find the actual copy of the license inside the folder used to store the library files.
+Use the Settings menu to control how the plugin analyzes your content, configure the automatic links algorithm, set default rule values, and adjust technical parameters such as PHP memory limits and the maximum number of analyzed posts. These options help support larger websites.
 
 == Installation ==
-= Installation (Single Site) =
 
-With this procedure you will be able to install the Autolinks Manager plugin on your WordPress website:
+1. Upload the plugin files to the `/wp-content/plugins/daext-autolinks-manager/` directory, or install the plugin through the WordPress Plugins screen directly.
+2. Activate the plugin through the Plugins screen in WordPress.
 
-1. Visit the **Plugins -> Add New** menu
-2. Click on the **Upload Plugin** button and select the zip file you just downloaded
-3. Click on **Install Now**
-4. Click on **Activate Plugin**
+=== 1. Analyze your internal links ===
 
-= Installation (Multisite) =
+The plugin provides dedicated menus to help you monitor and improve your internal linking:
 
-This plugin supports both a **Network Activation** (the plugin will be activated on all the sites of your WordPress Network) and a **Single Site Activation** in a **WordPress Network** environment (your plugin will be activate on single site of the network).
+- The **Dashboard** gives you an overview of all automatic links and internal link statistics across your content.
+- The **Link Equity** menu provides an estimate of the link equity accumulated by every URL linked in your content.
 
-With this procedure you will be able to perform a **Network Activation**:
+=== 2. Automate keyword-based linking ===
 
-1. Visit the **Plugins -> Add New** menu
-2. Click on the **Upload Plugin** button and select the zip file you just downloaded
-3. Click on **Install Now**
-4. Click on **Network Activate**
+Open the **Auto Link Rules** menu to define the keywords you want to convert into links and the target URLs they should point to. Organize your rules with categories and target groups to manage complex setups.
 
-With this procedure you will be able to perform a **Single Site Activation** in a **WordPress Network** environment:
-
-1. Visit the specific site of the **WordPress Network** where you want to install the plugin
-2. Visit the **Plugins** menu
-3. Click on the **Activate** button (just below the name of the plugin)
+For detailed guidance and advanced configuration, visit the [official Knowledge Base](https://daext.com/kb/link-manager/).
 
 == Changelog ==
+
+ = 1.10.12 =
+
+*July 22, 2026*
+
+* The plugin has been renamed from Autolinks Manager to Link Manager.
+* Added the Link Equity menu with per-URL equity calculation and filtering.
+* Added the Internal Links Optimization editor panel.
+* Added internal links statistics to the Dashboard.
+* Added internal links optimization flag per post to the Dashboard.
+* Improved the Dashboard to include combined link statistics per post.
+* Added Export of plugin configuration as XML.
+* Added Target Groups support.
+* Improved settings organization with dedicated sections for Link Analysis and Automatic Links.
 
 = 1.10.11 =
 
@@ -233,13 +195,3 @@ With this procedure you will be able to perform a **Single Site Activation** in 
 *October 10, 2020*
 
 * Initial release.
-
-== Screenshots ==
-1. Dashboard menu with automatic links statistics
-2. Configuration of a single automatic link
-3. List of automatic links
-4. Categories of automatic links
-5. Term Groups menu
-6. Options menu in the "Automatic Links" tab
-7. Options menu in the "Link Analysis" tab
-8. The "Autolinks Manager" sidebar in the post editor
