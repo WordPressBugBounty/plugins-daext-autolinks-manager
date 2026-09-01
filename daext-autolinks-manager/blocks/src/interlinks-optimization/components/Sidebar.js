@@ -1,3 +1,5 @@
+import getPostId from '../../shared/get-post-id';
+
 const { Button } = wp.components;
 const { PluginDocumentSettingPanel } = wp.editor;
 const { useState, useEffect } = wp.element;
@@ -6,23 +8,20 @@ const apiFetch = wp.apiFetch;
 
 const Sidebar = () => {
 
-    // Do not render anything if the user does not have the required capability.
-    if (parseInt(window.DAEXTAM_PARAMETERS.user_has_interlinks_optimization_mb_required_capability, 10) !== 1) {
-        return null;
-    }
-
-    // Do not render anything if this editor tool is not enabled in this post type.
-    if (parseInt(window.DAEXTAM_PARAMETERS.interlinks_optimization_is_active_in_post_type, 10) !== 1) {
-        return null;
-    }
-
   const [optimizationData, setOptimizationData] = useState(null);
 
     // Fetch interlinks optimization data when the component mounts and on post save.
     useEffect(() => {
-        const postId = parseInt(document.getElementById('post_ID').value, 10);
 
         const fetchData = () => {
+
+            const postId = getPostId();
+
+            // Do not perform the request if the post ID is not available.
+            if (!postId) {
+                return;
+            }
+
             wp.apiFetch({
                 path: '/daext-autolinks-manager/v1/generate-interlinks-optimization',
                 method: 'POST',
@@ -57,6 +56,16 @@ const Sidebar = () => {
             unsubscribe();
         };
     }, []);
+
+  // Do not render anything if the user does not have the required capability.
+  if (parseInt(window.DAEXTAM_PARAMETERS.user_has_interlinks_optimization_mb_required_capability, 10) !== 1) {
+    return null;
+  }
+
+  // Do not render anything if this editor tool is not enabled in this post type.
+  if (parseInt(window.DAEXTAM_PARAMETERS.interlinks_optimization_is_active_in_post_type, 10) !== 1) {
+    return null;
+  }
 
   return (
       <PluginDocumentSettingPanel

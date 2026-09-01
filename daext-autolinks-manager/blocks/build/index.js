@@ -10,90 +10,77 @@
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ Sidebar)
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 
 const {
-  TextControl
-} = wp.components;
-const {
   SelectControl
 } = wp.components;
 const {
-  dispatch,
-  select
+  useSelect,
+  useDispatch
 } = wp.data;
 const {
   PluginDocumentSettingPanel
 } = wp.editor;
 const {
-  Component
-} = wp.element;
-const {
   __
 } = wp.i18n;
-class Sidebar extends Component {
-  constructor(props) {
-    super(...arguments);
+const META_KEY = '_daextam_enable_autolinks';
+const Sidebar = () => {
+  /*
+   * Read the post meta with a subscription to the "core/editor" store.
+   *
+   * Note that the post meta should not be read only once when the component is mounted (e.g. with
+   * "componentDidMount"), because at that time the post entity record might not be available yet, and in that
+   * situation "getEditedPostAttribute( 'meta' )" returns "undefined".
+   */
+  const meta = useSelect(select => select('core/editor').getEditedPostAttribute('meta'), []);
+  const {
+    editPost
+  } = useDispatch('core/editor');
 
-    // The state is used only to rerender the component with setState
-    this.state = {
-      enableAutolinks: 'text'
-    };
+  // Do not render anything if the user does not have the required capability.
+  if (parseInt(window.DAEXTAM_PARAMETERS.user_has_interlinks_options_mb_required_capability, 10) !== 1) {
+    return null;
   }
-  componentDidMount() {
-    const meta = select('core/editor').getEditedPostAttribute('meta');
-    let enableAutolinks = meta['_daextam_enable_autolinks'];
-    if (enableAutolinks === '' || enableAutolinks === undefined) {
-      enableAutolinks = window.DAEXTAM_PARAMETERS.advanced_enable_autolinks;
-    }
-    this.setState({
-      enableAutolinks: enableAutolinks
-    });
-  }
-  render() {
-    // Do not render anything if the user does not have the required capability.
-    if (parseInt(window.DAEXTAM_PARAMETERS.user_has_interlinks_options_mb_required_capability, 10) !== 1) {
-      return null;
-    }
 
-    // Do not render anything if this editor tool is not enabled in this post type.
-    if (parseInt(window.DAEXTAM_PARAMETERS.interlinks_options_is_active_in_post_type, 10) !== 1) {
-      return null;
-    }
-    return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(PluginDocumentSettingPanel, {
-      name: "daextam-automatic-links-options",
-      title: __('Automatic Links', 'daext-autolinks-manager')
-    }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(SelectControl, {
-      label: __('Enable', 'daext-autolinks-manager'),
-      help: __('Automatically add links based on the configured keywords.', 'daext-autolinks-manager'),
-      value: this.state.enableAutolinks,
-      options: [{
-        label: __('No', 'daext-autolinks-manager'),
-        value: '0'
-      }, {
-        label: __('Yes', 'daext-autolinks-manager'),
-        value: '1'
-      }],
-      onChange: value => {
-        dispatch('core/editor').editPost({
-          meta: {
-            '_daextam_enable_autolinks': value
-          }
-        });
-
-        // Used to rerender the component
-        this.setState({
-          enableAutolinks: value
-        });
-      },
-      __nextHasNoMarginBottom: true,
-      __next40pxDefaultSize: true
-    }));
+  // Do not render anything if this editor tool is not enabled in this post type.
+  if (parseInt(window.DAEXTAM_PARAMETERS.interlinks_options_is_active_in_post_type, 10) !== 1) {
+    return null;
   }
-}
+
+  // Fall back to the default value defined in the plugin options when the meta is empty or not available yet.
+  const metaValue = meta ? meta[META_KEY] : undefined;
+  const enableAutolinks = metaValue === '' || metaValue === undefined || metaValue === null ? window.DAEXTAM_PARAMETERS.advanced_enable_autolinks : metaValue;
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(PluginDocumentSettingPanel, {
+    name: "daextam-automatic-links-options",
+    title: __('Automatic Links', 'daext-autolinks-manager')
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(SelectControl, {
+    label: __('Enable', 'daext-autolinks-manager'),
+    help: __('Automatically add links based on the configured keywords.', 'daext-autolinks-manager'),
+    value: enableAutolinks,
+    options: [{
+      label: __('No', 'daext-autolinks-manager'),
+      value: '0'
+    }, {
+      label: __('Yes', 'daext-autolinks-manager'),
+      value: '1'
+    }],
+    onChange: value => {
+      editPost({
+        meta: {
+          [META_KEY]: value
+        }
+      });
+    },
+    __nextHasNoMarginBottom: true,
+    __next40pxDefaultSize: true
+  }));
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Sidebar);
 
 /***/ }),
 
@@ -128,6 +115,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _shared_get_post_id__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../shared/get-post-id */ "./src/shared/get-post-id.js");
+
 
 const {
   Button
@@ -144,21 +133,17 @@ const {
 } = wp.i18n;
 const apiFetch = wp.apiFetch;
 const Sidebar = () => {
-  // Do not render anything if the user does not have the required capability.
-  if (parseInt(window.DAEXTAM_PARAMETERS.user_has_interlinks_optimization_mb_required_capability, 10) !== 1) {
-    return null;
-  }
-
-  // Do not render anything if this editor tool is not enabled in this post type.
-  if (parseInt(window.DAEXTAM_PARAMETERS.interlinks_optimization_is_active_in_post_type, 10) !== 1) {
-    return null;
-  }
   const [optimizationData, setOptimizationData] = useState(null);
 
   // Fetch interlinks optimization data when the component mounts and on post save.
   useEffect(() => {
-    const postId = parseInt(document.getElementById('post_ID').value, 10);
     const fetchData = () => {
+      const postId = (0,_shared_get_post_id__WEBPACK_IMPORTED_MODULE_1__["default"])();
+
+      // Do not perform the request if the post ID is not available.
+      if (!postId) {
+        return;
+      }
       wp.apiFetch({
         path: '/daext-autolinks-manager/v1/generate-interlinks-optimization',
         method: 'POST',
@@ -189,6 +174,16 @@ const Sidebar = () => {
       unsubscribe();
     };
   }, []);
+
+  // Do not render anything if the user does not have the required capability.
+  if (parseInt(window.DAEXTAM_PARAMETERS.user_has_interlinks_optimization_mb_required_capability, 10) !== 1) {
+    return null;
+  }
+
+  // Do not render anything if this editor tool is not enabled in this post type.
+  if (parseInt(window.DAEXTAM_PARAMETERS.interlinks_optimization_is_active_in_post_type, 10) !== 1) {
+    return null;
+  }
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(PluginDocumentSettingPanel, {
     name: "daextam-interlinks-optimization",
     title: __('Internal Links Optimization', 'daext-autolinks-manager')
@@ -225,6 +220,42 @@ registerPlugin('daextam-interlinks-optimization', {
   icon: false,
   render: _components_Sidebar__WEBPACK_IMPORTED_MODULE_0__["default"]
 });
+
+/***/ }),
+
+/***/ "./src/shared/get-post-id.js":
+/*!***********************************!*\
+  !*** ./src/shared/get-post-id.js ***!
+  \***********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ getPostId)
+/* harmony export */ });
+/**
+ * Returns the ID of the post currently edited in the block editor.
+ *
+ * The ID is retrieved from the "core/editor" store, and when the store is not ready yet (which can happen while the
+ * components of the sidebar are mounted) the value of the "post_ID" hidden input available in the classic editor
+ * screen is used as a fallback.
+ *
+ * @return {number|null} The post ID or null if the post ID is not available.
+ */
+function getPostId() {
+  const editorStore = wp.data.select('core/editor');
+  if (editorStore && typeof editorStore.getCurrentPostId === 'function') {
+    const postId = editorStore.getCurrentPostId();
+    if (postId) {
+      return parseInt(postId, 10);
+    }
+  }
+  const postIdInput = document.getElementById('post_ID');
+  if (postIdInput && postIdInput.value) {
+    return parseInt(postIdInput.value, 10);
+  }
+  return null;
+}
 
 /***/ }),
 

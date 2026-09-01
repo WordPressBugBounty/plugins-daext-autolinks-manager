@@ -3,9 +3,9 @@ Contributors: DAEXT
 Tags: internal links, link building, automatic links, seo, link equity
 Donate link: https://daext.com
 Requires at least: 5.9
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.10.12
+Stable tag: 1.10.13
 License: GPLv3
 
 A complete link management solution that helps you analyze internal links, monitor link equity, automate keyword-based linking, and more.
@@ -63,20 +63,33 @@ Use the Settings menu to control how the plugin analyzes your content, configure
 1. Upload the plugin files to the `/wp-content/plugins/daext-autolinks-manager/` directory, or install the plugin through the WordPress Plugins screen directly.
 2. Activate the plugin through the Plugins screen in WordPress.
 
-=== 1. Analyze your internal links ===
+### 1. Analyze your internal links
 
 The plugin provides dedicated menus to help you monitor and improve your internal linking:
 
 - The **Dashboard** gives you an overview of all automatic links and internal link statistics across your content.
 - The **Link Equity** menu provides an estimate of the link equity accumulated by every URL linked in your content.
 
-=== 2. Automate keyword-based linking ===
+Use the filter and search tools in each menu to quickly find specific posts or sort the data by any available metric.
+
+### 2. Automate keyword-based linking
 
 Open the **Auto Link Rules** menu to define the keywords you want to convert into links and the target URLs they should point to. Organize your rules with categories and target groups to manage complex setups.
+
+### 3. Optimize the number of internal links
+
+While editing a post, use the **Internal Links Optimization** panel to receive real-time information about the optimization of the article you are working on.
 
 For detailed guidance and advanced configuration, visit the [official Knowledge Base](https://daext.com/kb/link-manager/).
 
 == Changelog ==
+
+ = 1.10.13 =
+
+*September 1, 2026*
+
+* Fixed an issue with WordPress 7.0 and later that prevented the Automatic Links panel from being displayed in the block editor sidebar.
+* Additional minor improvements.
 
  = 1.10.12 =
 
