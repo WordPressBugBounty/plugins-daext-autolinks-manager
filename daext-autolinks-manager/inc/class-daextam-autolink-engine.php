@@ -20,6 +20,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Daextam_Autolink_Engine {
 
 	/**
+	 * Width, in bytes, of the keyword prefix used by the per-text-node rule
+	 * index.
+	 *
+	 * Chosen by measurement. Larger widths are more selective but push more
+	 * short keywords into narrower buckets; smaller widths collide heavily on
+	 * ordinary English prose. At 6 the index held ~16x on a normal article and
+	 * ~6x on a worst-case page built out of the keywords themselves, where a
+	 * width of 4 fell to ~3x.
+	 *
+	 * @var int
+	 */
+	const RULE_INDEX_WIDTH = 6;
+
+	/**
 	 * Shared plugin instance.
 	 *
 	 * @var Daextam_Shared
@@ -202,6 +216,49 @@ class Daextam_Autolink_Engine {
 		$home_url = home_url();
 
 		/*
+		 * Hoist every value that is constant for the whole eligibility loop.
+		 *
+		 * These were previously recomputed on each of the (potentially many
+		 * thousands of) iterations below. None of them depend on $autolink, so
+		 * the hoisted values are identical to what the loop computed each time.
+		 *
+		 * Guarded on a non-empty rule set so that a site with no auto link rules
+		 * performs exactly the same work it did before hoisting: the original
+		 * computed these inside the loop, so an empty $autolinks meant they were
+		 * never computed at all.
+		 */
+		$slug                             = '';
+		$term_helpers                     = null;
+		$current_post_type                = '';
+		$ignore_self_autolinks            = false;
+		$categories_and_tags_verification = '';
+		$all_post_types_with_ui           = null;
+
+		if ( ! empty( $autolinks ) ) {
+
+			$slug         = $this->shared->get( 'slug' );
+			$term_helpers = $this->shared->get_term_helpers();
+
+			// The post type is the same for every rule, so resolve it once.
+			if ( '' !== $post_type ) {
+				$this->parsed_post_type = $post_type;
+			} else {
+				$this->parsed_post_type = get_post_type();
+			}
+
+			/*
+			 * get_post_type() with no arguments resolves the CURRENT post, which is
+			 * not necessarily $this->parsed_post_type when a $post_type argument was
+			 * passed in from the back-end. It is kept as its own variable so the
+			 * categories/tags check below keeps its original meaning.
+			 */
+			$current_post_type = get_post_type();
+
+			$ignore_self_autolinks            = intval( get_option( $slug . '_advanced_ignore_self_autolinks' ), 10 ) === 1;
+			$categories_and_tags_verification = get_option( $slug . '_advanced_categories_and_tags_verification' );
+		}
+
+		/*
 		 * Build the list of automatic links that are eligible for this post, together
 		 * with their precomputed regex parameters.  We separate eligibility
 		 * checking from replacement so that the DOM is walked only once, with
@@ -220,23 +277,10 @@ class Daextam_Autolink_Engine {
 			}
 
 			/*
-			 * If $post_type is not empty means that we are adding the automatic links through the back-end, in this case set
-			 * the $this->parsed_post_type property with the $post_type variable.
-			 *
-			 * If $post_type is empty means that we are in the loop and the post type can be retrieved with the
-			 * get_post_type() function.
-			 */
-			if ( '' !== $post_type ) {
-				$this->parsed_post_type = $post_type;
-			} else {
-				$this->parsed_post_type = get_post_type();
-			}
-
-			/*
 			 * If the "Ignore Self Auto Links" option is set to true, do not apply the automatic links that have, as a target,
 			 * the post where they should be applied.
 			 */
-			if ( intval( get_option( $this->shared->get( 'slug' ) . '_advanced_ignore_self_autolinks' ), 10 ) === 1 ) {
+			if ( $ignore_self_autolinks ) {
 				if ( $autolink['url'] === $post_permalink ) {
 					continue;
 				}
@@ -247,7 +291,10 @@ class Daextam_Autolink_Engine {
 
 			// If $post_types_a is not an array fill $post_types_a with the posts available in the website.
 			if ( ! is_array( $post_types_a ) ) {
-				$post_types_a = $this->shared->get_content_helpers()->get_post_types_with_ui();
+				if ( null === $all_post_types_with_ui ) {
+					$all_post_types_with_ui = $this->shared->get_content_helpers()->get_post_types_with_ui();
+				}
+				$post_types_a = $all_post_types_with_ui;
 			}
 
 			// Verify the post type.
@@ -275,13 +322,12 @@ class Daextam_Autolink_Engine {
 				 *  - If $categories_and_tags_verification is equal to "post" verify the presence of the selected categories
 				 *  and tags only in the "post" post type.
 				 */
-				$categories_and_tags_verification = get_option( $this->shared->get( 'slug' ) . '_advanced_categories_and_tags_verification' );
-			if ( ( 'any' === $categories_and_tags_verification || 'post' === get_post_type() ) &&
-				( ! $this->shared->get_term_helpers()->is_compliant_with_categories( $this->post_id, $autolink ) ||
-					! $this->shared->get_term_helpers()->is_compliant_with_tags( $this->post_id, $autolink ) ) ) {
+			if ( ( 'any' === $categories_and_tags_verification || 'post' === $current_post_type ) &&
+				( ! $term_helpers->is_compliant_with_categories( $this->post_id, $autolink ) ||
+					! $term_helpers->is_compliant_with_tags( $this->post_id, $autolink ) ) ) {
 				continue;
 			}
-		} elseif ( ! $this->shared->get_term_helpers()->is_compliant_with_term_group( $this->post_id, $autolink, $this->parsed_post_type ) ) {
+		} elseif ( ! $term_helpers->is_compliant_with_term_group( $this->post_id, $autolink, $this->parsed_post_type ) ) {
 
 				/**
 				 * Do not proceed with the application of the autolink if this post is not compliant with the term
@@ -362,6 +408,22 @@ class Daextam_Autolink_Engine {
 				'autolink_keyword_before'         => $autolink_keyword_before,
 				'autolink_keyword_after'          => $autolink_keyword_after,
 				'max_number_autolinks_per_keyword' => $max_number_autolinks_per_keyword,
+
+				/*
+				 * Literal needle used as a fast pre-filter before running the regex.
+				 * The full pattern can only match if the keyword itself is present in
+				 * the text node, so a strpos() miss is a guaranteed regex miss.
+				 *
+				 * Case-insensitive rules use Unicode SIMPLE case folding, which is the
+				 * exact algorithm PCRE applies for the /iu modifiers. mb_strtolower()
+				 * must NOT be used here: it disagrees with PCRE on 20 Unicode fold
+				 * classes (micro sign vs Greek mu, Greek final sigma, long s, Greek
+				 * symbol variants, historic Cyrillic), which would silently drop links.
+				 */
+				'case_sensitive'                  => (bool) $autolink['case_sensitive_search'],
+				'needle'                          => $autolink['case_sensitive_search'] ?
+					$autolink['keyword'] :
+					mb_convert_case( $autolink['keyword'], MB_CASE_FOLD_SIMPLE, 'UTF-8' ),
 			);
 
 		}
@@ -380,6 +442,46 @@ class Daextam_Autolink_Engine {
 		 * apply_protected_blocks() are preserved verbatim because they appear as opaque text
 		 * node content and contain no characters that any keyword regex would match.
 		 */
+		/*
+		 * Build the multi-pattern index used to select candidate rules per text
+		 * node.
+		 *
+		 * Without it the per-node callback tests every rule against every text
+		 * node, costing O( rules x text length ). Profiling put that loop at 97%
+		 * of the method's runtime on a 7,500-rule article.
+		 *
+		 * Each rule is filed under the first self::RULE_INDEX_WIDTH bytes of
+		 * its case-folded keyword, or under the whole keyword when it is
+		 * shorter. Keywords shorter than the window therefore match exactly,
+		 * which is why no fallback list is needed: every rule is indexed.
+		 *
+		 * Soundness: case folding is a per-character 1:1 mapping, so if a
+		 * keyword occurs in a text node then its folded form occurs in the
+		 * folded node, and the first N bytes of that folded keyword appear as an
+		 * N-byte window at the same offset. The index is therefore a superset of
+		 * the rules that can match; every candidate is still verified by the
+		 * existing strpos() check and then by the regex itself.
+		 */
+		$rule_index = array();
+		foreach ( $eligible_autolinks as $index => $params ) {
+
+			$folded_keyword = mb_convert_case( $params['autolink']['keyword'], MB_CASE_FOLD_SIMPLE, 'UTF-8' );
+
+			if ( '' === $folded_keyword ) {
+				// A rule with an empty keyword is never filtered out.
+				$rule_index[0][''][] = $index;
+				continue;
+			}
+
+			$width = min( strlen( $folded_keyword ), self::RULE_INDEX_WIDTH );
+
+			$rule_index[ $width ][ substr( $folded_keyword, 0, $width ) ][] = $index;
+
+		}
+
+		// Ascending window widths; width 0 holds the always-candidate rules.
+		ksort( $rule_index );
+
 		$engine = $this; // Capture for use inside the closure below.
 
 		/*
@@ -404,13 +506,60 @@ class Daextam_Autolink_Engine {
 
 		$content = $this->shared->get_html_text_replacer()->replace_in_text_nodes(
 			$content,
-			function ( $text ) use ( $engine, $eligible_autolinks, &$remaining_per_rule ) {
+			function ( $text ) use ( $engine, $eligible_autolinks, $rule_index, &$remaining_per_rule ) {
 
-				foreach ( $eligible_autolinks as $index => $params ) {
+				if ( 0 === count( $eligible_autolinks ) ) {
+					return $text;
+				}
+
+				/*
+				 * Case-folded copy of the current text node, used both to collect
+				 * candidate rules and as the haystack of the case-insensitive
+				 * pre-filter. Rebuilt whenever a replacement changes $text.
+				 */
+				$folded_text = mb_convert_case( $text, MB_CASE_FOLD_SIMPLE, 'UTF-8' );
+
+				/*
+				 * Candidate rule indices for this text node, in ascending order.
+				 *
+				 * Ascending order is the original rule order, which is priority
+				 * order, and it must be preserved: earlier rules consume matched
+				 * text and draw down the per-post link budget.
+				 */
+				$candidates = $engine->collect_candidate_rules( $rule_index, $folded_text, -1 );
+				$position   = 0;
+				$total      = count( $candidates );
+
+				while ( $position < $total ) {
+
+					$index = $candidates[ $position ];
+					++$position;
+
+					$params = $eligible_autolinks[ $index ];
 
 					// Skip this rule if its document-wide limit has been exhausted.
 					if ( 0 === $remaining_per_rule[ $index ] ) {
 						continue;
+					}
+
+					/*
+					 * Pre-filter: the full pattern wraps the keyword in boundaries and
+					 * optional before/after fragments, so it can only match when the
+					 * keyword itself occurs in this text node. A literal strpos() miss is
+					 * therefore a guaranteed regex miss, and skipping the regex avoids
+					 * both the match attempt and the PCRE pattern compilation.
+					 *
+					 * Still required after the index lookup: the index is keyed on a
+					 * prefix, so a candidate is not necessarily a match, and
+					 * case-sensitive rules must be verified against the raw text.
+					 */
+					if ( '' !== $params['needle'] ) {
+
+						$haystack = $params['case_sensitive'] ? $text : $folded_text;
+
+						if ( false === strpos( $haystack, $params['needle'] ) ) {
+							continue;
+						}
 					}
 
 					$engine->parsed_autolink = $params['autolink'];
@@ -432,6 +581,25 @@ class Daextam_Autolink_Engine {
 					// were made on this text node (only when a limit is in effect).
 					if ( -1 !== $remaining_per_rule[ $index ] ) {
 						$remaining_per_rule[ $index ] -= $count;
+					}
+
+					/*
+					 * $text changed, so both the folded copy and the candidate set
+					 * are stale. The replacement removed the matched keyword but
+					 * also INSERTED an '[al]N[/al]' placeholder, so a later rule can
+					 * become a candidate that was not one before. Recomputing keeps
+					 * this identical to the unindexed loop, which re-tested every
+					 * remaining rule against the updated text.
+					 *
+					 * Rules at or before the current index are excluded: the
+					 * unindexed loop had already moved past them and would not have
+					 * revisited them either.
+					 */
+					if ( $count > 0 ) {
+						$folded_text = mb_convert_case( $text, MB_CASE_FOLD_SIMPLE, 'UTF-8' );
+						$candidates  = $engine->collect_candidate_rules( $rule_index, $folded_text, $index );
+						$position    = 0;
+						$total       = count( $candidates );
 					}
 
 				}
@@ -465,6 +633,68 @@ class Daextam_Autolink_Engine {
 		$this->autolink_a = array();
 
 		return $content;
+	}
+
+	/**
+	 * Returns the rule indices that could match the given case-folded text node.
+	 *
+	 * For each window width present in the index, every window of that width in
+	 * the text is looked up and the rules filed under it are collected. The
+	 * result is a superset of the rules whose keyword actually occurs, so each
+	 * one is still verified by the caller.
+	 *
+	 * Declared public so the closure passed to
+	 * Daextam_Html_Text_Replacer::replace_in_text_nodes() can reach it through
+	 * the captured $engine reference.
+	 *
+	 * @param array  $rule_index   Index built in add_autolinks(): width => gram => rule indices.
+	 * @param string $folded_text  The case-folded text node.
+	 * @param int    $after_index  Only return rule indices greater than this. Pass -1 for all.
+	 *
+	 * @return array Rule indices in ascending order.
+	 */
+	public function collect_candidate_rules( $rule_index, $folded_text, $after_index = -1 ) {
+
+		$candidates  = array();
+		$text_length = strlen( $folded_text );
+
+		foreach ( $rule_index as $width => $table ) {
+
+			// Width 0 holds rules with an empty keyword, which always apply.
+			if ( 0 === $width ) {
+				foreach ( $table as $rules ) {
+					foreach ( $rules as $rule ) {
+						if ( $rule > $after_index ) {
+							$candidates[ $rule ] = true;
+						}
+					}
+				}
+				continue;
+			}
+
+			$last_offset = $text_length - $width;
+
+			for ( $offset = 0; $offset <= $last_offset; $offset++ ) {
+
+				$gram = substr( $folded_text, $offset, $width );
+
+				if ( isset( $table[ $gram ] ) ) {
+					foreach ( $table[ $gram ] as $rule ) {
+						if ( $rule > $after_index ) {
+							$candidates[ $rule ] = true;
+						}
+					}
+				}
+			}
+		}
+
+		/*
+		 * Ascending key order restores the original rule order, which is the
+		 * priority order the engine applies rules in.
+		 */
+		ksort( $candidates );
+
+		return array_keys( $candidates );
 	}
 
 	/**

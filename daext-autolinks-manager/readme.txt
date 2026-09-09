@@ -5,7 +5,7 @@ Donate link: https://daext.com
 Requires at least: 5.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.10.13
+Stable tag: 1.10.14
 License: GPLv3
 
 A complete link management solution that helps you analyze internal links, monitor link equity, automate keyword-based linking, and more.
@@ -83,6 +83,12 @@ While editing a post, use the **Internal Links Optimization** panel to receive r
 For detailed guidance and advanced configuration, visit the [official Knowledge Base](https://daext.com/kb/link-manager/).
 
 == Changelog ==
+
+ = 1.10.14 =
+
+*September 9, 2026*
+
+* Improved the performance of the automatic links engine.
 
  = 1.10.13 =
 

@@ -47,12 +47,23 @@ class Daextam_Term_Helpers {
 	public function is_compliant_with_categories( $post_id, $autolink ) {
 
 		$autolink_categories_a = maybe_unserialize( $autolink['categories'] );
-		$post_categories       = get_the_terms( $post_id, 'category' );
-		$category_found        = false;
 
 		// If no categories are specified return true.
 		if ( ! is_array( $autolink_categories_a ) ) {
 			return true;
+		}
+
+		/*
+		 * Fetched only after the early return above. Most rules specify no
+		 * categories, and this method is called once per rule, so fetching the
+		 * post terms first meant one wasted lookup per rule on every request.
+		 */
+		$post_categories = get_the_terms( $post_id, 'category' );
+		$category_found  = false;
+
+		// get_the_terms() returns false or a WP_Error when the post has no categories.
+		if ( ! is_array( $post_categories ) ) {
+			return false;
 		}
 
 		/*
@@ -84,15 +95,20 @@ class Daextam_Term_Helpers {
 	public function is_compliant_with_tags( $post_id, $autolink ) {
 
 		$autolink_tags_a = maybe_unserialize( $autolink['tags'] );
-		$post_tags       = get_the_terms( $post_id, 'post_tag' );
-		$tag_found       = false;
 
 		// If no tags are specified return true.
 		if ( ! is_array( $autolink_tags_a ) ) {
 			return true;
 		}
 
-		if ( false !== $post_tags ) {
+		/*
+		 * Fetched only after the early return above, for the same reason as in
+		 * is_compliant_with_categories().
+		 */
+		$post_tags = get_the_terms( $post_id, 'post_tag' );
+		$tag_found = false;
+
+		if ( is_array( $post_tags ) ) {
 
 			/**
 			 * Do not proceed with the application of the autolink if this post has at least one tag but no tags

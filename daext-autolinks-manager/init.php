@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Link Manager
  * Description: A complete link management solution that helps you analyze internal links, monitor link equity, automate keyword-based linking, and more.
- * Version: 1.10.13
+ * Version: 1.10.14
  * Requires at least: 5.9
  * Requires PHP: 7.4
  * Author: DAEXT
